@@ -255,7 +255,7 @@
       var(--bg);
   }
   .host-canvas{
-    width:100%; max-width:1400px; min-height:46rem;
+    width:100%; max-width:1400px; min-height:54rem;
     background:var(--surface); border-radius:28px; border:1px solid var(--line);
     box-shadow:var(--shadow); position:relative; overflow:hidden;
     display:flex; flex-direction:column; padding:2.2rem 3rem;
@@ -269,9 +269,11 @@
   .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:3rem; min-height:0; }
   .host-decor{ position:absolute; opacity:.9; pointer-events:none; z-index:0; }
   .host-decor.swirl{ width:22rem; right:-4rem; top:-3rem; opacity:.55; }
-  .host-decor.duck{ width:8.5rem; right:-.5rem; bottom:-1rem; opacity:.85; }
-  .host-decor.bottle{ width:5.6rem; left:.4rem; bottom:-3.4rem; opacity:.92; }
-  .host-decor.bottle-2{ width:5.6rem; left:5.4rem; bottom:-3.4rem; opacity:.92; }
+  .host-decor.duck{ width:9rem; right:-.5rem; bottom:-1rem; opacity:.85; }
+  .host-decor-products{ position:absolute; left:.5rem; bottom:-3.6rem; width:15rem; height:22rem; pointer-events:none; z-index:0; }
+  .host-decor-products .bottle{ position:absolute; left:0; bottom:0; width:6.8rem; opacity:.95; }
+  .host-decor-products .bottle-2{ position:absolute; left:6.15rem; bottom:0; width:6.8rem; opacity:.95; }
+  .host-decor.chao{ width:11.5rem; right:5.5rem; bottom:2.5rem; transform:rotate(-6deg); opacity:.98; filter:drop-shadow(0 8px 14px rgba(20,12,26,.2)); }
   .host-content{ position:relative; z-index:1; display:flex; flex-direction:column; height:100%; min-height:0; }
 
   .lobby-copy{ max-width:34rem; }
@@ -339,6 +341,7 @@
     .host-canvas{ aspect-ratio:auto; min-height:100vh; padding:1.4rem 1.2rem; }
     .host-main{ flex-direction:column; gap:1.4rem; }
     .host-decor{ display:none; }
+    .host-decor-products{ display:none; }
     .join-box{ flex-direction:column; text-align:center; }
     .lobby-copy h2{ font-size:1.9rem; }
     .bar-row{ grid-template-columns:6.4rem 1fr 2.2rem; }
@@ -367,6 +370,7 @@ var ASSET_BOTTLE = "assets/bottle.webp";
 var ASSET_BOTTLE_EUCALIPTO = "assets/bottle-eucalipto.webp";
 var ASSET_HERO = "assets/hero.webp";
 var ASSET_LOGO = "assets/logo.webp";
+var ASSET_CHAO = "assets/chao-n2.webp";
 var ASSET_TILE = "assets/tile.webp";
 
 try { document.documentElement.style.setProperty("--tile-img", 'url("' + ASSET_TILE + '")'); } catch (e) {}
@@ -1596,8 +1600,11 @@ function renderHost(app){
   '<div class="host-outer"><div class="host-canvas">' +
     '<img class="host-decor swirl" src="' + ASSET_SWIRL + '" alt="" />' +
     '<img class="host-decor duck" src="' + ASSET_DUCK + '" alt="" />' +
-    '<img class="host-decor bottle-2" src="' + ASSET_BOTTLE_EUCALIPTO + '" alt="" />' +
-    '<img class="host-decor bottle" src="' + ASSET_BOTTLE + '" alt="" />' +
+    '<img class="host-decor chao" src="' + ASSET_CHAO + '" alt="" />' +
+    '<div class="host-decor-products">' +
+      '<img class="bottle-2" src="' + ASSET_BOTTLE_EUCALIPTO + '" alt="" />' +
+      '<img class="bottle" src="' + ASSET_BOTTLE + '" alt="" />' +
+    '</div>' +
     '<div class="host-content">' +
       '<div class="host-topbar">' +
         '<div class="wordmark"><img class="wm-logo" src="' + ASSET_LOGO + '" alt="Pato" /></div>' +
