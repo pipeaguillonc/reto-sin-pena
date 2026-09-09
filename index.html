@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reto Sin Pena — Pato Odor Block</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+  :root{
+    --bg:#faf8fb;
+    --surface:#ffffff;
+    --surface-2:#f3ecf8;
+    --surface-3:#ece2f4;
+    --ink:#241a30;
+    --ink-muted:#6b5e78;
+    --line:#e7deee;
+    --accent-pink:#d63384;
+    --accent-pink-soft:#ea619e;
+    --accent-pink-wash:#fbe6f0;
+    --accent-purple:#7c4da8;
+    --accent-purple-soft:#a172ba;
+    --accent-purple-wash:#efe6f7;
+    --accent-green:#1f7a3d;
+    --accent-green-soft:#64d36a;
+    --accent-green-wash:#e6f6e9;
+    --accent-lime:#bfd24a;
+    --accent-red:#e11f1c;
+    --shadow: 0 20px 40px -20px rgba(36,26,48,0.35);
+    --tile-scrim-1: rgba(255,255,255,.18);
+    --tile-scrim-2: rgba(255,255,255,.40);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#170f1e;
+      --surface:#221830;
+      --surface-2:#2b2038;
+      --surface-3:#352943;
+      --ink:#f3ecf8;
+      --ink-muted:#b9acc5;
+      --line:#3a2e48;
+      --accent-pink:#ff7ab8;
+      --accent-pink-soft:#e24b90;
+      --accent-pink-wash:#3a2030;
+      --accent-purple:#c7a6e8;
+      --accent-purple-soft:#8b5cb0;
+      --accent-purple-wash:#2c2340;
+      --accent-green:#57d67e;
+      --accent-green-soft:#2e9e52;
+      --accent-green-wash:#1c3324;
+      --accent-lime:#d8e876;
+      --accent-red:#ff6b66;
+      --shadow: 0 20px 45px -18px rgba(0,0,0,0.6);
+      --tile-scrim-1: rgba(15,12,18,.45);
+      --tile-scrim-2: rgba(15,12,18,.68);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#170f1e;
+    --surface:#221830;
+    --surface-2:#2b2038;
+    --surface-3:#352943;
+    --ink:#f3ecf8;
+    --ink-muted:#b9acc5;
+    --line:#3a2e48;
+    --accent-pink:#ff7ab8;
+    --accent-pink-soft:#e24b90;
+    --accent-pink-wash:#3a2030;
+    --accent-purple:#c7a6e8;
+    --accent-purple-soft:#8b5cb0;
+    --accent-purple-wash:#2c2340;
+    --accent-green:#57d67e;
+    --accent-green-soft:#2e9e52;
+    --accent-green-wash:#1c3324;
+    --accent-lime:#d8e876;
+    --accent-red:#ff6b66;
+    --shadow: 0 20px 45px -18px rgba(0,0,0,0.6);
+    --tile-scrim-1: rgba(15,12,18,.45);
+    --tile-scrim-2: rgba(15,12,18,.68);
+    color-scheme: dark;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Baloo 2','Manrope',system-ui,sans-serif;
+    text-wrap:balance;
+    margin:0;
+  }
+  .tabular{ font-variant-numeric:tabular-nums; }
+  #app{ min-height:100vh; display:flex; flex-direction:column; }
+  button{ font-family:inherit; }
+  input{ font-family:inherit; }
+  a{ color:inherit; }
+  ::selection{ background:var(--accent-pink-wash); }
+
+  .visually-hidden{ position:absolute; width:1px;height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+
+  /* ---------- buttons ---------- */
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    font-weight:800; font-family:'Baloo 2',sans-serif; letter-spacing:.01em;
+    border-radius:999px; padding:.95rem 1.7rem; font-size:1.02rem;
+    display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    text-align:center;
+  }
+  .btn:active{ transform:scale(.97); }
+  .btn:focus-visible{ outline:3px solid var(--accent-purple); outline-offset:2px; }
+  .btn-primary{ background:var(--accent-pink); color:#fff; box-shadow:0 10px 24px -10px color-mix(in srgb, var(--accent-pink) 65%, transparent); }
+  .btn-primary:hover{ filter:brightness(1.06); }
+  .btn-secondary{ background:var(--surface-2); color:var(--accent-purple); }
+  .btn-secondary:hover{ filter:brightness(1.04); }
+  .btn-ghost{ background:transparent; color:var(--ink-muted); padding:.6rem 1rem; font-family:'Manrope',sans-serif; font-weight:700; font-size:.9rem; }
+  .btn-ghost:hover{ color:var(--ink); }
+  .btn-lg{ padding:1.15rem 2.4rem; font-size:1.2rem; }
+  .btn[disabled]{ opacity:.45; cursor:not-allowed; }
+  .btn-danger{ background:var(--accent-red); color:#fff; }
+
+  .field{ display:flex; flex-direction:column; gap:.4rem; text-align:left; }
+  .field label{ font-size:.78rem; font-weight:700; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.06em; }
+  .field input, .field textarea{
+    background:var(--surface); border:2px solid var(--line); border-radius:14px;
+    padding:.85rem 1rem; font-size:1rem; color:var(--ink); width:100%;
+  }
+  .field input:focus, .field textarea:focus{ outline:none; border-color:var(--accent-purple); }
+  .field textarea{ resize:vertical; min-height:6rem; font-family:'Manrope',monospace; font-size:.88rem; line-height:1.5; }
+
+  /* ---------- role picker ---------- */
+  .role-screen{
+    flex:1; display:flex; align-items:center; justify-content:center; padding:2rem 1.25rem;
+    background:
+      linear-gradient(180deg, var(--tile-scrim-1), var(--tile-scrim-2)),
+      var(--tile-img) center/cover no-repeat,
+      var(--bg);
+  }
+  .role-card{
+    max-width:30rem; width:100%; background:var(--surface); border-radius:28px;
+    padding:2.4rem 2rem 2.2rem; box-shadow:var(--shadow); text-align:center;
+    border:1px solid var(--line);
+  }
+  .role-card .duck{ width:96px; margin:0 auto 1rem; display:block; }
+  .role-card .hero{ width:200px; margin:0 auto 1.1rem; display:block; }
+  .role-card .eyebrow{ font-weight:800; letter-spacing:.14em; text-transform:uppercase; font-size:.72rem; color:var(--accent-purple); }
+  .role-card h1{ font-size:1.9rem; margin-top:.35rem; line-height:1.15; }
+  .role-card p.lede{ color:var(--ink-muted); margin-top:.6rem; font-size:.98rem; line-height:1.5; }
+  .role-choices{ display:flex; flex-direction:column; gap:.7rem; margin-top:1.6rem; }
+  .role-choice{
+    display:flex; align-items:center; gap:.9rem; text-align:left; width:100%;
+    background:var(--surface-2); border:2px solid transparent; border-radius:18px; padding:1rem 1.1rem;
+    cursor:pointer; transition:border-color .12s ease, transform .12s ease;
+  }
+  .role-choice:hover{ border-color:var(--accent-purple-soft); transform:translateY(-1px); }
+  .role-choice .ic{ width:2.6rem; height:2.6rem; border-radius:12px; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; font-weight:800; font-size:1.15rem; flex:none; }
+  .role-choice .ic.player{ background:var(--accent-pink-wash); color:var(--accent-pink); }
+  .role-choice .ic.host{ background:var(--accent-purple-wash); color:var(--accent-purple); }
+  .role-choice .tt{ font-family:'Baloo 2'; font-weight:700; font-size:1.05rem; }
+  .role-choice .ds{ color:var(--ink-muted); font-size:.85rem; margin-top:.1rem; }
+
+  /* ---------- player shell (mobile) ---------- */
+  .player-shell{
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    padding:1.6rem 1.1rem 2.4rem; gap:1.1rem;
+    background:
+      linear-gradient(180deg, var(--tile-scrim-1), var(--tile-scrim-2)),
+      var(--tile-img) center/cover no-repeat,
+      var(--bg);
+  }
+  .brand-row{ display:flex; align-items:center; gap:.55rem; align-self:flex-start; }
+  .brand-row .dot{ width:.55rem; height:.55rem; border-radius:50%; background:var(--accent-red); }
+  .brand-row span{ font-weight:800; font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-muted); }
+  .player-card{
+    width:100%; max-width:26rem; background:var(--surface); border:1px solid var(--line);
+    border-radius:26px; padding:1.7rem 1.4rem; box-shadow:var(--shadow); text-align:center;
+  }
+  .player-card .duck-sm{ width:64px; margin:0 auto .6rem; display:block; }
+  .player-card .hero-sm{ width:150px; margin:0 auto .7rem; display:block; }
+  .greet{ font-size:1.35rem; margin-top:.2rem; }
+  .muted{ color:var(--ink-muted); font-size:.94rem; line-height:1.5; }
+  .pulse-dot{ display:inline-block; width:.5rem; height:.5rem; border-radius:50%; background:var(--accent-green-soft); margin-right:.4rem; animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.45; transform:scale(1.3);} }
+  @media (prefers-reduced-motion: reduce){ .pulse-dot{ animation:none; } }
+
+  .info-pill{ display:inline-flex; align-items:center; gap:.4rem; background:var(--surface-2); color:var(--ink-muted); border-radius:999px; padding:.4rem .85rem; font-size:.82rem; font-weight:700; }
+  .prize-banner{ background:var(--accent-lime); color:#2b3410; border-radius:16px; padding:.8rem 1rem; font-weight:700; font-size:.92rem; margin-top:.9rem; }
+
+  /* ---------- timer ring ---------- */
+  .ring-wrap{ position:relative; width:var(--ring-size,168px); height:var(--ring-size,168px); margin:0 auto; }
+  .ring{
+    width:100%; height:100%; border-radius:50%;
+    background:conic-gradient(var(--ring-color, var(--accent-pink)) calc(var(--pct,100)*1%), var(--surface-2) 0);
+    display:flex; align-items:center; justify-content:center;
+    transition:background .18s linear;
+  }
+  .ring::after{ content:""; position:absolute; inset:10%; border-radius:50%; background:var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+  .ring-time{ position:relative; z-index:1; font-family:'Baloo 2'; font-weight:800; font-size:var(--ring-font,2.1rem); }
+
+  /* ---------- name search ---------- */
+  .name-search-wrap{ position:relative; }
+  .name-search-wrap::before{
+    content:"⌕"; position:absolute; left:1rem; top:50%; transform:translateY(-50%);
+    font-size:1.15rem; color:var(--ink-muted); pointer-events:none;
+  }
+  .name-search-wrap input{
+    width:100%; border:2px solid var(--line); border-radius:14px; padding:.9rem 1.1rem .9rem 2.5rem;
+    font-size:1.05rem; text-align:left; background:var(--surface); color:var(--ink);
+  }
+  .name-search-wrap input:focus{ outline:none; border-color:var(--accent-purple); }
+  .search-hint{ color:var(--ink-muted); font-size:.86rem; margin-top:.75rem; line-height:1.45; text-align:left; }
+  .name-results{ display:flex; flex-direction:column; gap:.5rem; margin-top:.7rem; max-height:14rem; overflow-y:auto; }
+  .name-result{
+    appearance:none; background:var(--surface-2); border:2px solid transparent; border-radius:12px;
+    padding:.75rem .95rem; font-weight:700; font-size:.98rem; text-align:left; cursor:pointer;
+    color:var(--ink); font-family:inherit;
+  }
+  .name-result:hover, .name-result:focus-visible{ border-color:var(--accent-purple-soft); outline:none; }
+
+  /* ---------- chips / place entry ---------- */
+  .entry-row{ display:flex; gap:.55rem; margin-top:1.1rem; }
+  .entry-row input{ flex:1; border:2px solid var(--line); border-radius:14px; padding:.85rem 1rem; font-size:1rem; background:var(--surface); color:var(--ink); }
+  .entry-row input:focus{ outline:none; border-color:var(--accent-purple); }
+  .chip-list{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; justify-content:center; }
+  .chip{
+    display:inline-flex; align-items:center; gap:.35rem; border-radius:999px; padding:.42rem .8rem .42rem .65rem;
+    font-size:.86rem; font-weight:700; border:1.5px solid transparent;
+  }
+  .chip.valid{ background:var(--accent-green-wash); color:var(--accent-green); border-color:color-mix(in srgb, var(--accent-green) 30%, transparent); }
+  .chip.invalid{ background:var(--surface-2); color:var(--ink-muted); border-color:var(--line); }
+  .chip .mark{ font-family:'Baloo 2'; font-weight:800; }
+  .valid-count{ font-family:'Baloo 2'; font-weight:800; font-size:2.4rem; color:var(--accent-pink); line-height:1; }
+  .valid-count-label{ font-size:.78rem; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+
+  /* ---------- host / pantalla ---------- */
+  .host-outer{
+    flex:1; display:flex; align-items:center; justify-content:center; padding:1.4rem;
+    background:
+      linear-gradient(180deg, var(--tile-scrim-1), var(--tile-scrim-2)),
+      var(--tile-img) center/cover no-repeat,
+      var(--bg);
+  }
+  .host-canvas{
+    width:100%; max-width:min(1400px, 177.7vh - 3rem);
+    aspect-ratio:16/9; background:var(--surface); border-radius:28px; border:1px solid var(--line);
+    box-shadow:var(--shadow); position:relative; overflow:hidden;
+    display:flex; flex-direction:column; padding:2.2rem 3rem;
+  }
+  .host-topbar{ display:flex; align-items:center; justify-content:space-between; }
+  .wordmark{ display:flex; align-items:center; gap:.6rem; }
+  .wordmark .wm-badge{ font-family:'Baloo 2'; font-weight:800; color:var(--accent-red); font-size:1.35rem; letter-spacing:.02em; }
+  .wordmark .wm-sub{ font-size:.78rem; color:var(--ink-muted); font-weight:700; }
+  .host-gear{ background:var(--surface-2); border:none; border-radius:12px; width:2.6rem; height:2.6rem; cursor:pointer; font-size:1.1rem; color:var(--ink-muted); }
+  .host-gear:hover{ color:var(--ink); }
+  .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:3rem; min-height:0; }
+  .host-decor{ position:absolute; opacity:.9; pointer-events:none; z-index:0; }
+  .host-decor.swirl{ width:22rem; right:-4rem; top:-3rem; opacity:.55; }
+  .host-decor.duck{ width:11rem; left:-.8rem; bottom:-.6rem; opacity:.85; }
+  .host-decor.bottle{ width:6.5rem; right:1.4rem; bottom:-.5rem; opacity:.92; }
+  .host-content{ position:relative; z-index:1; display:flex; flex-direction:column; height:100%; min-height:0; }
+
+  .lobby-copy{ max-width:34rem; }
+  .lobby-copy .eyebrow{ font-weight:800; letter-spacing:.14em; text-transform:uppercase; font-size:.78rem; color:var(--accent-purple); }
+  .lobby-copy h2{ font-size:2.5rem; line-height:1.08; margin-top:.4rem; }
+  .lobby-copy .question{ font-size:1.25rem; margin-top:1rem; color:var(--ink); font-weight:600; line-height:1.4; }
+  .join-box{ background:var(--surface-2); border-radius:20px; padding:1.1rem 1.3rem; margin-top:1.4rem; display:flex; align-items:center; gap:1rem; }
+  .join-box .qr{ width:88px; height:88px; border-radius:12px; background:#fff; padding:6px; flex:none; box-shadow:0 1px 0 var(--line); }
+  .join-box .jt{ font-size:.86rem; color:var(--ink-muted); line-height:1.4; }
+  .join-box .jt b{ color:var(--ink); font-family:'Baloo 2'; font-size:1.05rem; }
+  .count-badge{ margin-top:1.2rem; display:inline-flex; align-items:center; gap:.5rem; }
+  .count-badge .n{ font-family:'Baloo 2'; font-weight:800; font-size:1.6rem; color:var(--accent-pink); }
+  .count-badge .l{ color:var(--ink-muted); font-size:.85rem; font-weight:700; }
+
+  .timer-stage{ display:flex; flex-direction:column; align-items:center; gap:1rem; }
+  .timer-stage .q{ font-size:1.5rem; font-weight:700; text-align:center; max-width:36rem; }
+  .submit-tally{ font-size:.95rem; color:var(--ink-muted); font-weight:700; }
+
+  /* ---------- podium ---------- */
+  .podium-wrap{ width:100%; display:flex; flex-direction:column; align-items:center; gap:1.6rem; }
+  .podium{ display:flex; align-items:flex-end; gap:1.1rem; }
+  .podium-slot{ display:flex; flex-direction:column; align-items:center; gap:.5rem; width:9.5rem; }
+  .podium-slot .badge{ width:2.4rem; height:2.4rem; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; font-weight:800; color:#fff; font-size:1.05rem; }
+  .podium-slot .nm{ font-family:'Baloo 2'; font-weight:700; font-size:1.05rem; text-align:center; line-height:1.15; }
+  .podium-slot .ct{ font-size:.82rem; color:var(--ink-muted); font-weight:700; }
+  .podium-slot .bar{ width:100%; border-radius:16px 16px 8px 8px; display:flex; align-items:flex-start; justify-content:center; padding-top:.6rem; }
+  .podium-slot.rank-1 .bar{ height:8.5rem; background:linear-gradient(180deg, var(--accent-pink-soft), var(--accent-pink)); }
+  .podium-slot.rank-2 .bar{ height:6rem; background:linear-gradient(180deg, var(--accent-purple-soft), var(--accent-purple)); }
+  .podium-slot.rank-3 .bar{ height:4.2rem; background:linear-gradient(180deg, var(--accent-lime), #97a83a); }
+  .podium-slot.rank-1 .badge{ background:var(--accent-pink); }
+  .podium-slot.rank-2 .badge{ background:var(--accent-purple); }
+  .podium-slot.rank-3 .badge{ background:#97a83a; }
+  .rest-list{ display:flex; gap:1.6rem; }
+  .rest-item{ display:flex; align-items:center; gap:.55rem; color:var(--ink-muted); font-weight:700; font-size:.92rem; }
+  .rest-item .badge-sm{ width:1.6rem; height:1.6rem; border-radius:50%; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; font-size:.78rem; color:var(--ink); }
+
+  /* ---------- bar chart (top places) ---------- */
+  .wordcloud{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:center; gap:.35rem 1.05rem; max-width:52rem; padding:0 1rem; }
+  .wc-word{ font-family:'Baloo 2'; font-weight:800; line-height:1.05; white-space:nowrap; }
+  .bars{ width:100%; max-width:46rem; display:flex; flex-direction:column; gap:.55rem; }
+  .bar-row{ display:grid; grid-template-columns:11rem 1fr 2.6rem; align-items:center; gap:.8rem; }
+  .bar-row .lbl{ font-size:.86rem; font-weight:700; text-align:right; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar-row .track{ background:var(--surface-2); border-radius:999px; height:1.15rem; overflow:hidden; }
+  .bar-row .fill{ height:100%; border-radius:999px; background:var(--accent-pink); }
+  .bar-row .val{ font-family:'Baloo 2'; font-weight:800; font-size:.92rem; color:var(--accent-pink); }
+
+  /* ---------- host controls dock ---------- */
+  .host-dock{ display:flex; align-items:center; justify-content:center; gap:.8rem; padding-top:1rem; }
+
+  /* ---------- settings drawer ---------- */
+  .overlay{ position:fixed; inset:0; background:rgba(20,12,26,.55); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:50; }
+  .drawer{ background:var(--surface); border-radius:24px; padding:1.8rem; max-width:34rem; width:100%; max-height:88vh; overflow-y:auto; box-shadow:var(--shadow); }
+  .drawer h3{ font-size:1.3rem; }
+  .drawer .grp{ margin-top:1.2rem; }
+  .drawer-actions{ display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.5rem; }
+  .hint{ font-size:.78rem; color:var(--ink-muted); margin-top:.3rem; line-height:1.4; }
+  .not-listed{ display:inline-block; margin-left:.4rem; font-size:.68rem; font-weight:800; color:var(--accent-purple); background:var(--accent-purple-wash); padding:.1rem .45rem; border-radius:999px; vertical-align:middle; }
+
+  @media (max-width: 900px){
+    .host-outer{ padding:.6rem; }
+    .host-canvas{ aspect-ratio:auto; min-height:100vh; padding:1.4rem 1.2rem; }
+    .host-main{ flex-direction:column; gap:1.4rem; }
+    .host-decor{ display:none; }
+    .join-box{ flex-direction:column; text-align:center; }
+    .lobby-copy h2{ font-size:1.9rem; }
+    .bar-row{ grid-template-columns:6.4rem 1fr 2.2rem; }
+  }
+  .footer-note{ text-align:center; font-size:.78rem; color:var(--ink-muted); margin-top:1rem; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script>
+  /* Resolved true/false once the Supabase library finishes loading (or fails/times out).
+     Kept as a promise so boot() can await it without ever blocking page render. */
+  window.__supabaseReady = new Promise(function(resolve){ window.__resolveSupabaseReady = resolve; });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer
+  onload="window.__resolveSupabaseReady(true)" onerror="window.__resolveSupabaseReady(false)"></script>
+<script>
+(function(){
+"use strict";
+
+/* ============================= ASSETS ============================= */
+var ASSET_DUCK = "assets/duck.webp";
+var ASSET_SWIRL = "assets/swirl.webp";
+var ASSET_BOTTLE = "assets/bottle.webp";
+var ASSET_HERO = "assets/hero.webp";
+var ASSET_TILE = "assets/tile.webp";
+
+try { document.documentElement.style.setProperty("--tile-img", 'url("' + ASSET_TILE + '")'); } catch (e) {}
+
+/* ============================= DEFAULT CONTENT ============================= */
+var DEFAULT_QUESTION = "¿En qué lugares te daría pena hacer del número 2? Nombra la mayor cantidad de lugares posible antes de que se acabe el tiempo.";
+var DEFAULT_PRIZE = "Los 5 primeros se ganan una sorpresa Pato Odor Block";
+var DEFAULT_DURATION = 30;
+
+var DEFAULT_PLACES = [
+  { canonical: "El colegio o la universidad", synonyms: ["colegio", "universidad", "la u", "escuela", "cole"] },
+  { canonical: "La oficina o el trabajo", synonyms: ["oficina", "trabajo", "chamba", "la empresa"] },
+  { canonical: "El centro comercial", synonyms: ["centro comercial", "cc", "mall"] },
+  { canonical: "La casa de un amigo", synonyms: ["casa de un amigo", "casa de amigos", "casa de mi amigo", "casa de una amiga"] },
+  { canonical: "La casa de los suegros", synonyms: ["casa de los papas", "casa de los papás", "casa de los suegros", "casa del novio", "casa de la novia", "casa de la suegra"] },
+  { canonical: "La casa de los abuelos", synonyms: ["casa de los abuelos", "casa de la abuela", "casa del abuelo"] },
+  { canonical: "El avión", synonyms: ["avion", "vuelo"] },
+  { canonical: "El bus o Transmilenio", synonyms: ["bus", "buseta", "transmilenio", "transporte publico", "metro"] },
+  { canonical: "El carro en un trancón", synonyms: ["carro", "trancon", "taxi", "uber", "carretera"] },
+  { canonical: "La iglesia", synonyms: ["iglesia", "misa", "templo"] },
+  { canonical: "El gimnasio", synonyms: ["gimnasio", "gym"] },
+  { canonical: "El restaurante", synonyms: ["restaurante", "restaurant"] },
+  { canonical: "El cine o el teatro", synonyms: ["cine", "teatro"] },
+  { canonical: "La playa o la piscina", synonyms: ["playa", "piscina"] },
+  { canonical: "El camping", synonyms: ["camping", "monte", "potrero", "excursion"] },
+  { canonical: "Una fiesta o rumba", synonyms: ["fiesta", "rumba", "discoteca", "bar", "parche"] },
+  { canonical: "El hotel", synonyms: ["hotel", "hospedaje"] },
+  { canonical: "El aeropuerto", synonyms: ["aeropuerto"] },
+  { canonical: "El estadio", synonyms: ["estadio", "cancha", "partido"] },
+  { canonical: "Un baño público", synonyms: ["bano publico", "baño publico"] },
+  { canonical: "Un crucero o barco", synonyms: ["crucero", "barco", "ferry"] },
+  { canonical: "El consultorio médico o el hospital", synonyms: ["consultorio", "hospital", "clinica", "medico"] }
+];
+
+var DEFAULT_PARTICIPANTS = [
+  "Alejandra Vitola",
+  "Jorge Barragan Romero",
+  "Mauricio Correa",
+  "Pablo Molina",
+  "Jorge Humberto Palacio Hoyos",
+  "Nury Callejas Leal",
+  "Ingrid Xiomara Castro Ospina",
+  "Andrés Florez",
+  "Dixon Aranzazu",
+  "Carolina López",
+  "Diego Ivan Alvarez",
+  "Maria Alejandra Camargo",
+  "Alejandro Jaller Palacio",
+  "Laura Vannessa Olaya Herrera",
+  "Jose Luis Sierra",
+  "Catalina Valencia",
+  "Maria Moore",
+  "Juan Alberto Medina Forero",
+  "Karen Lizeth Alayon Rodriguez",
+  "Jaime Eduardo Serrato",
+  "Anny Rivera",
+  "Erick E. Vargas Chavez",
+  "Jorge Alejandro Villamil Ospina",
+  "Luis Adolfo Sanchez Rodriguez",
+  "Cindy Acosta",
+  "Yuli Paola Tinjaca",
+  "Joan Figueroa",
+  "Valentina De Antonio",
+  "Soiner Estid Yaya Rojas",
+  "Brayan Cala",
+  "Michael Jimenez Duarte",
+  "Ricardo Sepulveda",
+  "Camila Andrea Barcelo Ariza",
+  "Juan David Torres",
+  "Diana Pachon",
+  "Federico Mejía",
+  "Diana Botero",
+  "Herlemis Medina",
+  "Andres Navarro",
+  "Mallory Miranda",
+  "Adriana Gutierrez",
+  "Dayana De Aguas",
+  "Jonathan Ernesto Niño Hernandez",
+  "Andrés Puerta",
+  "Omar Sepulveda Velandia",
+  "HARDY ANDRES GUZMAN",
+  "Andrés Limongi",
+  "Paola Güiza",
+  "Santiago Galán",
+  "Nohora Guzman",
+  "Heli Rueda",
+  "Ofelia Quijano Ayala",
+  "Vanessa Landino",
+  "Catalina Jaramillo",
+  "Marcela Castillo",
+  "Juliana Hernández",
+  "Angela Rojas",
+  "Miguel Silva",
+  "Alejandro Mejía",
+  "Jesus Mendez",
+  "Javier Castilla",
+  "Elizabeth Rueda",
+  "Duby Guererro",
+  "Milena Corredo",
+  "María Angelica Nemocon",
+  "Ana María Medina",
+  "Flor Cabezas",
+  "Aurelio de Castro",
+  "Fosión Mojica",
+  "Sergio Castillo",
+  "Frank Uribe Vargas",
+  "Reynel David Forero Aguilera",
+  "José Ignacio Solano",
+  "Jonathan Trujillo",
+  "Maricela Grisales",
+  "Natalia Taborda",
+  "Graciela Gil",
+  "Alberto Lopez",
+  "Edwin Romero",
+  "Andres Serna",
+  "Patricia Perez",
+  "Ruben Saldarriaga",
+  "Andres Sierra",
+  "Faber Alberto Sanchez",
+  "Estefania Jaimes",
+  "Jireth Espinoza",
+  "Daniela Gonzalez",
+  "Sebastian Jaramillo",
+  "Julian Ariza",
+  "Antonio Fernandez",
+  "Nicolas Pinzon",
+  "Diana Alavarez",
+  "Jhony Alberto Amaya Betancur",
+  "Verónica Ramirez Cardona",
+  "German Puyo",
+  "Mauricio Garciaherreros Puyo",
+  "Luis Abel Gonzalez Hernandez",
+  "Maria Camila Ruiz Veloza",
+  "Andrés Fernando Enríquez",
+  "Esteban Dario Ojeda Solarte",
+  "Elkin Acosta",
+  "Jhon Fredy Gutierrez",
+  "Adriana del Socorro",
+  "Martha Landinez",
+  "Stephany Velasquez",
+  "Elkin Alvarez",
+  "Edward Jimenez",
+  "Santiago Sevillano",
+  "Fredy Laiseca",
+  "Claudia Rueda",
+  "Milena Berrocal",
+  "Judith Hernandez",
+  "Diana Montenegro",
+  "Laura Velez",
+  "Ana María Vargas",
+  "Jennys Jimenez",
+  "Lilian Zuniga",
+  "Maria Camila Herrera",
+  "Amaru Liendo",
+  "Adriana Correa",
+  "Cristina Rodriguez",
+  "Laura Marquez",
+  "Carolina Hernandez",
+  "Natalia Wills",
+  "Adriana Mesa",
+  "Maria Gabriela Colmenares",
+  "Camilo Forero",
+  "Christian Hageboeck",
+  "Jiuber Rodriguez",
+  "Bibiana Tellez",
+  "Juliana Sanchez",
+  "Paula Rondon",
+  "Nicolas Guzman",
+  "Peter Lowy",
+  "Paula Osorio",
+  "Paola Aldaz",
+  "Ashly Arevalo",
+  "Daniela Cordoba",
+  "Eduardo Guitierrez",
+  "Alexandra Beltrán"
+];
+
+function defaultConfig(){
+  return {
+    question: DEFAULT_QUESTION,
+    durationSeconds: DEFAULT_DURATION,
+    prize: DEFAULT_PRIZE,
+    participants: DEFAULT_PARTICIPANTS.slice(),
+    places: DEFAULT_PLACES.map(function(p){ return { canonical: p.canonical, synonyms: p.synonyms.slice() }; })
+  };
+}
+
+/* ============================= UTILITIES ============================= */
+function normalize(s){
+  return (s == null ? "" : String(s))
+    .toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+var ARTICLE_RE = /^(el|la|los|las|un|una|unos|unas)\s+/;
+function coreNormalize(s){ return normalize(s).replace(ARTICLE_RE, ""); }
+
+function levenshtein(a, b){
+  if (a === b) return 0;
+  var al = a.length, bl = b.length;
+  if (al === 0) return bl;
+  if (bl === 0) return al;
+  var prev = new Array(bl + 1);
+  for (var j = 0; j <= bl; j++) prev[j] = j;
+  for (var i = 1; i <= al; i++) {
+    var cur = [i];
+    for (var k = 1; k <= bl; k++) {
+      var cost = a[i - 1] === b[k - 1] ? 0 : 1;
+      cur[k] = Math.min(prev[k] + 1, cur[k - 1] + 1, prev[k - 1] + cost);
+    }
+    prev = cur;
+  }
+  return prev[bl];
+}
+function fuzzyEq(a, b){
+  if (!a || !b) return false;
+  if (a === b) return true;
+  var as = a.replace(/s$/, ""), bs = b.replace(/s$/, "");
+  if (as === bs) return true;
+  var maxLen = Math.max(a.length, b.length);
+  var allowed = maxLen >= 8 ? 2 : (maxLen >= 4 ? 1 : 0);
+  return levenshtein(a, b) <= allowed;
+}
+function toTitleCase(s){
+  return String(s || "").trim().split(/\s+/).map(function(w){
+    return w ? w[0].toUpperCase() + w.slice(1).toLowerCase() : w;
+  }).join(" ");
+}
+function slugify(s){
+  var n = normalize(s).replace(/\s+/g, "-").slice(0, 60);
+  return n || ("jugador-" + Math.random().toString(36).slice(2, 8));
+}
+function escapeHtml(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+    return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+  });
+}
+function formatMMSS(ms){
+  var s = Math.max(0, Math.ceil(ms / 1000));
+  var m = Math.floor(s / 60), r = s % 60;
+  return m + ":" + String(r).padStart(2, "0");
+}
+function uid(){ return "id" + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+
+function matchParticipant(input, list){
+  var n = normalize(input);
+  if (!n) return { matched: false, display: "", listed: false };
+  if (!list || list.length === 0) return { matched: true, display: toTitleCase(input), listed: false };
+  for (var i = 0; i < list.length; i++) {
+    if (normalize(list[i]) === n) return { matched: true, display: list[i], listed: true };
+  }
+  for (var j = 0; j < list.length; j++) {
+    var pn = normalize(list[j]);
+    if (fuzzyEq(pn, n)) return { matched: true, display: list[j], listed: true };
+  }
+  return { matched: false, display: toTitleCase(input), listed: false };
+}
+function matchPlace(input, places){
+  var n = coreNormalize(input);
+  if (!n || !places || !places.length) return null;
+  for (var i = 0; i < places.length; i++) {
+    var p = places[i];
+    var terms = [p.canonical].concat(p.synonyms || []).map(coreNormalize);
+    if (terms.indexOf(n) !== -1) return p.canonical;
+  }
+  for (var i2 = 0; i2 < places.length; i2++) {
+    var p2 = places[i2];
+    var terms2 = [p2.canonical].concat(p2.synonyms || []).map(coreNormalize);
+    for (var t = 0; t < terms2.length; t++) {
+      if (terms2[t] && fuzzyEq(terms2[t], n)) return p2.canonical;
+    }
+  }
+  return null;
+}
+
+/* ============================= LOCAL FALLBACK STORE ============================= */
+function makeLocalStore(){
+  var LSKEY = "retoSinPena.localdb.v1";
+  var data = {};
+  try { data = JSON.parse(localStorage.getItem(LSKEY) || "{}"); } catch (e) { data = {}; }
+  function persist(){ try { localStorage.setItem(LSKEY, JSON.stringify(data)); } catch (e) {} }
+  var docListeners = {};
+  var colListeners = {};
+  function computeDocs(basepath){
+    var prefix = basepath + "/", out = [];
+    for (var key in data) {
+      if (key.indexOf(prefix) === 0) {
+        var rest = key.slice(prefix.length);
+        if (rest.length && rest.indexOf("/") === -1) out.push({ id: rest, body: data[key] });
+      }
+    }
+    return out;
+  }
+  function applyQuery(docs, spec){
+    var arr = docs.slice();
+    (spec.wheres || []).forEach(function(w){
+      var f = w[0], op = w[1], v = w[2];
+      arr = arr.filter(function(d){
+        var val = d.body ? d.body[f] : undefined;
+        switch (op) {
+          case "==": return val === v;
+          case "!=": return val !== v;
+          case "<": return val < v;
+          case "<=": return val <= v;
+          case ">": return val > v;
+          case ">=": return val >= v;
+          case "in": return Array.isArray(v) && v.indexOf(val) !== -1;
+          case "not-in": return Array.isArray(v) && v.indexOf(val) === -1;
+          case "array-contains": return Array.isArray(val) && val.indexOf(v) !== -1;
+          default: return true;
+        }
+      });
+    });
+    if (spec.orderByField) {
+      var f2 = spec.orderByField, dir = spec.orderByDir === "desc" ? -1 : 1;
+      arr.sort(function(a, b){
+        var av = a.body ? a.body[f2] : undefined, bv = b.body ? b.body[f2] : undefined;
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    } else {
+      arr.sort(function(a, b){ return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
+    }
+    if (spec.limitN) arr = arr.slice(0, spec.limitN);
+    return arr.map(function(d){ return { id: d.id, exists: true, data: d.body }; });
+  }
+  function notifyDocAt(path){
+    (docListeners[path] || []).forEach(function(cb){
+      cb({ id: path.split("/").pop(), exists: data[path] != null, data: data[path] || null });
+    });
+  }
+  function notifyColAt(basepath){
+    (colListeners[basepath] || []).forEach(function(entry){
+      entry.cb(applyQuery(computeDocs(basepath), entry.spec));
+    });
+  }
+  function notifyPath(path){
+    notifyDocAt(path);
+    var parent = path.split("/").slice(0, -1).join("/");
+    notifyColAt(parent);
+  }
+  function makeDocRef(path){
+    return {
+      get: function(){
+        return Promise.resolve({ id: path.split("/").pop(), exists: data[path] != null, data: data[path] || null });
+      },
+      set: function(body){
+        data[path] = JSON.parse(JSON.stringify(body));
+        persist(); notifyPath(path);
+        return Promise.resolve();
+      },
+      update: function(body){
+        var cur = data[path] || {};
+        data[path] = Object.assign({}, cur, body);
+        persist(); notifyPath(path);
+        return Promise.resolve();
+      },
+      onSnapshot: function(next){
+        if (!docListeners[path]) docListeners[path] = [];
+        docListeners[path].push(next);
+        next({ id: path.split("/").pop(), exists: data[path] != null, data: data[path] || null });
+        return function(){
+          docListeners[path] = (docListeners[path] || []).filter(function(f){ return f !== next; });
+        };
+      }
+    };
+  }
+  function makeColRef(basepath){
+    var spec = { wheres: [] };
+    var api = {
+      where: function(f, op, v){ spec.wheres.push([f, op, v]); return api; },
+      orderBy: function(f, d){ spec.orderByField = f; spec.orderByDir = d || "asc"; return api; },
+      limit: function(n){ spec.limitN = n; return api; },
+      doc: function(id){ return makeDocRef(basepath + "/" + (id || uid())); },
+      add: function(body){ var ref = makeDocRef(basepath + "/" + uid()); return ref.set(body).then(function(){ return ref; }); },
+      get: function(){ return Promise.resolve(applyQuery(computeDocs(basepath), spec)); },
+      onSnapshot: function(next){
+        if (!colListeners[basepath]) colListeners[basepath] = [];
+        var entry = { cb: next, spec: spec };
+        colListeners[basepath].push(entry);
+        next(applyQuery(computeDocs(basepath), spec));
+        return function(){
+          colListeners[basepath] = (colListeners[basepath] || []).filter(function(e){ return e !== entry; });
+        };
+      }
+    };
+    return api;
+  }
+  return { doc: makeDocRef, collection: makeColRef };
+}
+
+/* ============================= SUPABASE ADAPTER ============================= */
+/* Implements the same doc/collection interface as makeLocalStore(), backed by
+   Postgres tables + Realtime, so none of the render/game logic below needs to know
+   which backend it's talking to. */
+var PATO_TABLES = { config: "pato_config", state: "pato_state", players: "pato_players", answers: "pato_answers" };
+function wrapSupabase(sb){
+  function tableFor(basepath){ return PATO_TABLES[basepath] || basepath; }
+  function extraCols(basepath, body){
+    if (basepath === "answers") {
+      return {
+        round_id: (body && typeof body.roundId === "number") ? body.roundId : 0,
+        count: (body && typeof body.count === "number") ? body.count : 0
+      };
+    }
+    return {};
+  }
+  /* Same filter/sort/limit semantics as the local store's applyQuery, so collection
+     queries behave identically regardless of backend. */
+  function applyQuery(docs, spec){
+    var arr = docs.slice();
+    (spec.wheres || []).forEach(function(w){
+      var f = w[0], op = w[1], v = w[2];
+      arr = arr.filter(function(d){
+        var val = d.body ? d.body[f] : undefined;
+        switch (op) {
+          case "==": return val === v;
+          case "!=": return val !== v;
+          case "<": return val < v;
+          case "<=": return val <= v;
+          case ">": return val > v;
+          case ">=": return val >= v;
+          case "in": return Array.isArray(v) && v.indexOf(val) !== -1;
+          case "not-in": return Array.isArray(v) && v.indexOf(val) === -1;
+          case "array-contains": return Array.isArray(val) && val.indexOf(v) !== -1;
+          default: return true;
+        }
+      });
+    });
+    if (spec.orderByField) {
+      var f2 = spec.orderByField, dir = spec.orderByDir === "desc" ? -1 : 1;
+      arr.sort(function(a, b){
+        var av = a.body ? a.body[f2] : undefined, bv = b.body ? b.body[f2] : undefined;
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        if (av < bv) return -1 * dir;
+        if (av > bv) return 1 * dir;
+        return 0;
+      });
+    } else {
+      arr.sort(function(a, b){ return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; });
+    }
+    if (spec.limitN) arr = arr.slice(0, spec.limitN);
+    return arr.map(function(d){ return { id: d.id, exists: true, data: d.body }; });
+  }
+  function makeDocRef(path){
+    var parts = path.split("/");
+    var basepath = parts[0], id = parts[1];
+    var table = tableFor(basepath);
+    var ref = {
+      get: function(){
+        return sb.from(table).select("data").eq("id", id).maybeSingle().then(function(res){
+          if (res.error) throw res.error;
+          var row = res.data;
+          return { id: id, exists: !!row, data: row ? row.data : null };
+        });
+      },
+      set: function(body){
+        var row = Object.assign({ id: id, data: body }, extraCols(basepath, body));
+        return sb.from(table).upsert(row).then(function(res){ if (res.error) throw res.error; });
+      },
+      update: function(body){
+        return ref.get().then(function(cur){
+          var merged = Object.assign({}, cur.data || {}, body);
+          var row = Object.assign({ id: id, data: merged }, extraCols(basepath, merged));
+          return sb.from(table).upsert(row).then(function(res){ if (res.error) throw res.error; });
+        });
+      },
+      onSnapshot: function(next, err){
+        var stopped = false;
+        ref.get().then(function(snap){ if (!stopped) next(snap); }).catch(function(e){ if (err) err(e); });
+        var channel = sb.channel("doc:" + table + ":" + id)
+          .on("postgres_changes", { event: "*", schema: "public", table: table, filter: "id=eq." + id }, function(payload){
+            if (stopped) return;
+            if (payload.eventType === "DELETE" || !payload.new) next({ id: id, exists: false, data: null });
+            else next({ id: id, exists: true, data: payload.new.data });
+          })
+          .subscribe();
+        return function(){ stopped = true; sb.removeChannel(channel); };
+      }
+    };
+    return ref;
+  }
+  function makeColRef(basepath){
+    var table = tableFor(basepath);
+    var spec = { wheres: [] };
+    var cache = {};
+    var loaded = false;
+    var channel = null;
+    var listeners = [];
+    function notify(){
+      var docs = Object.keys(cache).map(function(id){ return { id: id, body: cache[id] }; });
+      var result = applyQuery(docs, spec);
+      listeners.forEach(function(cb){ cb(result); });
+    }
+    function ensureLive(){
+      if (channel) return;
+      sb.from(table).select("id,data").then(function(res){
+        (res.data || []).forEach(function(row){ cache[row.id] = row.data; });
+        loaded = true;
+        notify();
+      });
+      channel = sb.channel("col:" + table)
+        .on("postgres_changes", { event: "*", schema: "public", table: table }, function(payload){
+          if (payload.eventType === "DELETE") {
+            var oldId = payload.old && payload.old.id;
+            if (oldId != null) delete cache[oldId];
+          } else if (payload.new) {
+            cache[payload.new.id] = payload.new.data;
+          }
+          if (loaded) notify();
+        })
+        .subscribe();
+    }
+    var api = {
+      where: function(f, op, v){ spec.wheres.push([f, op, v]); return api; },
+      orderBy: function(f, d){ spec.orderByField = f; spec.orderByDir = d || "asc"; return api; },
+      limit: function(n){ spec.limitN = n; return api; },
+      doc: function(id){ return makeDocRef(basepath + "/" + (id || uid())); },
+      add: function(body){ var docRef = makeDocRef(basepath + "/" + uid()); return docRef.set(body).then(function(){ return docRef; }); },
+      get: function(){
+        return sb.from(table).select("id,data").then(function(res){
+          if (res.error) throw res.error;
+          var docs = (res.data || []).map(function(row){ return { id: row.id, body: row.data }; });
+          return applyQuery(docs, spec);
+        });
+      },
+      onSnapshot: function(next){
+        ensureLive();
+        listeners.push(next);
+        if (loaded) notify();
+        return function(){ listeners = listeners.filter(function(cb){ return cb !== next; }); };
+      }
+    };
+    return api;
+  }
+  return { doc: makeDocRef, collection: makeColRef };
+}
+
+/* ============================= APP STATE ============================= */
+var store = null;
+var ctx = {
+  role: null,
+  usingLocal: false,
+  config: null,
+  game: null,
+  players: [],
+  answersForRound: [],
+  myPlayer: null,
+  myAnswerDoc: null,
+  currentPlaces: [],
+  validSet: null,
+  settingsOpen: false,
+  _answersSubRound: undefined,
+  _answersUnsub: null,
+  _playersSubbed: false,
+  _submitting: false,
+  _qrDrawn: false
+};
+
+function mergeConfig(body){
+  var d = defaultConfig();
+  if (!body) return d;
+  return {
+    question: typeof body.question === "string" && body.question.trim() ? body.question : d.question,
+    durationSeconds: (typeof body.durationSeconds === "number" && body.durationSeconds > 0) ? body.durationSeconds : d.durationSeconds,
+    prize: typeof body.prize === "string" ? body.prize : d.prize,
+    participants: Array.isArray(body.participants) ? body.participants : d.participants,
+    places: (Array.isArray(body.places) && body.places.length) ? body.places : d.places
+  };
+}
+function mergeGame(body){
+  if (body && typeof body === "object") {
+    return {
+      status: body.status || "lobby",
+      roundId: typeof body.roundId === "number" ? body.roundId : 0,
+      startedAt: typeof body.startedAt === "number" ? body.startedAt : 0,
+      durationSeconds: typeof body.durationSeconds === "number" ? body.durationSeconds : DEFAULT_DURATION
+    };
+  }
+  return { status: "lobby", roundId: 0, startedAt: 0, durationSeconds: DEFAULT_DURATION };
+}
+
+function ensureAnswersSub(){
+  if (!ctx.game) return;
+  if (ctx._answersSubRound === ctx.game.roundId) return;
+  if (ctx._answersUnsub) { ctx._answersUnsub(); ctx._answersUnsub = null; }
+  ctx._answersSubRound = ctx.game.roundId;
+  ctx.answersForRound = [];
+  ctx._answersUnsub = store.collection("answers")
+    .where("roundId", "==", ctx.game.roundId)
+    .orderBy("count", "desc")
+    .limit(300)
+    .onSnapshot(function(docs){
+      ctx.answersForRound = docs.map(function(d){ return d.data; }).filter(Boolean);
+      render();
+    });
+}
+function ensurePlayersSub(){
+  if (ctx._playersSubbed) return;
+  ctx._playersSubbed = true;
+  store.collection("players").limit(500).onSnapshot(function(docs){
+    ctx.players = docs.map(function(d){ return d.data; }).filter(Boolean);
+    render();
+  });
+}
+function ensureMyAnswerSub(){
+  if (!ctx.myPlayer || !ctx.game) return;
+  if (ctx._myAnswerRound === ctx.game.roundId) return;
+  if (ctx._myAnswerUnsub) { ctx._myAnswerUnsub(); ctx._myAnswerUnsub = null; }
+  ctx._myAnswerRound = ctx.game.roundId;
+  ctx.myAnswerDoc = null;
+  ctx.currentPlaces = [];
+  ctx.validSet = new Set();
+  ctx._submitting = false;
+  var docId = ctx.game.roundId + "__" + ctx.myPlayer.slug;
+  ctx._myAnswerUnsub = store.doc("answers/" + docId).onSnapshot(function(snap){
+    ctx.myAnswerDoc = snap.exists ? snap.data : null;
+    render();
+  });
+}
+
+/* ============================= GAME ACTIONS ============================= */
+var G = {};
+window.__G = G;
+
+G.chooseRole = function(role){
+  ctx.role = role;
+  try { localStorage.setItem("retoSinPena.role", role); } catch (e) {}
+  try { location.hash = role === "host" ? "pantalla" : "jugar"; } catch (e) {}
+  render();
+};
+G.changeRole = function(){
+  ctx.role = null;
+  try { localStorage.removeItem("retoSinPena.role"); } catch (e) {}
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  render();
+};
+
+G.onNameSearch = function(){ refreshNameResults(); };
+G.selectParticipant = function(name){
+  if (!name) return;
+  setMyPlayer(name, true);
+};
+
+G.submitName = function(){
+  var input = document.getElementById("nameSearch");
+  if (!input) return;
+  var typed = input.value.trim();
+  if (!typed) return;
+  var res = matchParticipant(typed, ctx.config.participants);
+  var display = res.display || toTitleCase(typed);
+  setMyPlayer(display, !!res.listed);
+};
+function setMyPlayer(display, listed){
+  var slug = slugify(display);
+  ctx.myPlayer = { slug: slug, name: display, listed: !!listed };
+  try {
+    localStorage.setItem("retoSinPena.playerSlug", slug);
+    localStorage.setItem("retoSinPena.playerName", display);
+    localStorage.setItem("retoSinPena.playerListed", listed ? "1" : "0");
+  } catch (e) {}
+  store.collection("players").doc(slug).set({ name: display, listed: !!listed, joinedAt: Date.now() });
+  render();
+};
+G.forgetPlayer = function(){
+  ctx.myPlayer = null;
+  ctx.myAnswerDoc = null;
+  ctx._myAnswerRound = undefined;
+  if (ctx._myAnswerUnsub) { ctx._myAnswerUnsub(); ctx._myAnswerUnsub = null; }
+  try {
+    localStorage.removeItem("retoSinPena.playerSlug");
+    localStorage.removeItem("retoSinPena.playerName");
+    localStorage.removeItem("retoSinPena.playerListed");
+  } catch (e) {}
+  render();
+};
+
+G.addPlaceFromInput = function(){
+  var input = document.getElementById("placeInput");
+  if (!input) return;
+  var val = input.value;
+  input.value = "";
+  input.focus();
+  addPlace(val);
+};
+function addPlace(text){
+  text = (text || "").trim();
+  if (!text) return;
+  if (!ctx.validSet) ctx.validSet = new Set();
+  var norm = normalize(text);
+  var already = ctx.currentPlaces.some(function(p){ return normalize(p.text) === norm; });
+  if (already) return;
+  var canonical = matchPlace(text, ctx.config.places);
+  var dup = canonical && ctx.validSet.has(canonical);
+  if (canonical && !dup) ctx.validSet.add(canonical);
+  ctx.currentPlaces.push({ text: text, canonical: canonical, dup: !!dup });
+  refreshLiveDynamic();
+}
+G.removePlace = function(idx){
+  var item = ctx.currentPlaces[idx];
+  if (!item) return;
+  ctx.currentPlaces.splice(idx, 1);
+  if (item.canonical && !item.dup) {
+    var stillUsed = ctx.currentPlaces.some(function(p){ return p.canonical === item.canonical; });
+    if (!stillUsed) ctx.validSet.delete(item.canonical);
+    else {
+      var firstOther = ctx.currentPlaces.find(function(p){ return p.canonical === item.canonical; });
+      if (firstOther) firstOther.dup = false;
+    }
+  }
+  refreshLiveDynamic();
+};
+
+function submitAnswer(){
+  if (!ctx.myPlayer || !ctx.game || ctx._submitting) return;
+  ctx._submitting = true;
+  var roundId = ctx.game.roundId;
+  var valid = Array.from(ctx.validSet || []);
+  var raw = ctx.currentPlaces.map(function(p){ return p.text; });
+  var docId = roundId + "__" + ctx.myPlayer.slug;
+  store.doc("answers/" + docId).set({
+    roundId: roundId, slug: ctx.myPlayer.slug, name: ctx.myPlayer.name,
+    raw: raw, valid: valid, count: valid.length, submittedAt: Date.now()
+  });
+}
+
+G.startRound = function(){
+  if (!ctx.game || !ctx.config) return;
+  var newRoundId = (ctx.game.roundId || 0) + 1;
+  store.doc("state/current").set({
+    status: "live", roundId: newRoundId, startedAt: Date.now(), durationSeconds: ctx.config.durationSeconds
+  });
+};
+G.goResultsTop = function(){ store.doc("state/current").update({ status: "results_top" }); };
+G.goResultsPlaces = function(){ store.doc("state/current").update({ status: "results_places" }); };
+G.newRound = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
+G.backToLobby = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
+
+G.openSettings = function(){ ctx.settingsOpen = true; render(); };
+G.closeSettings = function(){ ctx.settingsOpen = false; render(); };
+G.saveSettings = function(){
+  var question = document.getElementById("cfgQuestion").value.trim() || DEFAULT_QUESTION;
+  var duration = parseInt(document.getElementById("cfgDuration").value, 10);
+  if (!duration || duration < 10) duration = DEFAULT_DURATION;
+  if (duration > 180) duration = 180;
+  var prize = document.getElementById("cfgPrize").value.trim();
+  var participantsRaw = document.getElementById("cfgParticipants").value;
+  var participants = participantsRaw.split("\n").map(function(s){ return s.trim(); }).filter(Boolean);
+  var placesRaw = document.getElementById("cfgPlaces").value;
+  var places = placesRaw.split("\n").map(function(line){
+    var parts = line.split("=");
+    var canonical = (parts[0] || "").trim();
+    var synonyms = parts[1] ? parts[1].split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
+    return { canonical: canonical, synonyms: synonyms };
+  }).filter(function(p){ return p.canonical; });
+  if (!places.length) places = defaultConfig().places;
+  store.doc("config/settings").set({ question: question, durationSeconds: duration, prize: prize, participants: participants, places: places });
+  ctx.settingsOpen = false;
+  render();
+};
+
+/* ============================= RENDER: SHARED BITS ============================= */
+function loadingHtml(){
+  return '<div class="role-screen"><div class="role-card"><img class="duck" src="' + ASSET_DUCK + '" alt=""/><p class="muted">Cargando el reto…</p></div></div>';
+}
+function brandRow(){
+  return '<div class="brand-row"><span class="dot"></span><span>Pato Odor Block · Sin Pena</span></div>';
+}
+function offlineNote(){
+  if (!ctx.usingLocal) return "";
+  return '<p class="hint">Modo local: no hay conexión a la base de datos compartida, así que esto solo funciona en este navegador (útil para probar antes del evento).</p>';
+}
+
+/* ============================= RENDER: ROLE SCREEN ============================= */
+function roleScreenHtml(){
+  return '' +
+  '<div class="role-screen"><div class="role-card">' +
+    '<img class="hero" src="' + ASSET_HERO + '" alt="Pato Odor Block" />' +
+    '<div class="eyebrow">Pato Odor Block · N°2 sin pena</div>' +
+    '<h1>Reto Sin Pena</h1>' +
+    '<p class="lede">Un juego rápido para el evento de lanzamiento: nombra lugares incómodos contrarreloj y compite por el ranking.</p>' +
+    '<div class="role-choices">' +
+      '<button class="role-choice" onclick="__G.chooseRole(\'player\')">' +
+        '<span class="ic player">JU</span>' +
+        '<span><span class="tt">Soy participante</span><div class="ds">Entra desde tu celular con tu nombre</div></span>' +
+      '</button>' +
+      '<button class="role-choice" onclick="__G.chooseRole(\'host\')">' +
+        '<span class="ic host">PT</span>' +
+        '<span><span class="tt">Pantalla del evento</span><div class="ds">Para el proyector o TV del anfitrión</div></span>' +
+      '</button>' +
+    '</div>' +
+    offlineNote() +
+  '</div></div>';
+}
+
+/* ============================= RENDER: PLAYER ============================= */
+var _playerLiveMount = null; /* dedupe key: avoids rebuilding (and glitching) the live timer ring on unrelated snapshot updates */
+function renderPlayer(app){
+  if (!ctx.myPlayer) { _playerLiveMount = null; app.innerHTML = nameEntryHtml(); focusNameInput(); return; }
+  ensureMyAnswerSub();
+  var status = ctx.game.status;
+  if (status === "lobby") { _playerLiveMount = null; app.innerHTML = playerLobbyHtml(); return; }
+  if (status === "live") {
+    var already = ctx.myAnswerDoc && ctx.myAnswerDoc.roundId === ctx.game.roundId;
+    var key = ctx.game.roundId + ":" + (already ? 1 : 0);
+    if (_playerLiveMount === key) return; /* already showing this exact screen; leave the ring/timer DOM alone */
+    _playerLiveMount = key;
+    if (already) { app.innerHTML = playerSubmittedHtml(); }
+    else { app.innerHTML = playerLiveHtml(); focusPlaceInput(); }
+    return;
+  }
+  _playerLiveMount = null;
+  if (status === "results_top") { ensureAnswersSub(); app.innerHTML = playerResultsTopHtml(); return; }
+  if (status === "results_places") { ensureAnswersSub(); app.innerHTML = playerResultsPlacesHtml(); return; }
+  app.innerHTML = playerLobbyHtml();
+}
+function focusNameInput(){ setTimeout(function(){ var el = document.getElementById("nameSearch"); if (el) el.focus(); }, 30); }
+function focusPlaceInput(){ setTimeout(function(){ var el = document.getElementById("placeInput"); if (el) el.focus(); }, 30); }
+
+function nameResultsHtml(q){
+  var list = (ctx.config && ctx.config.participants) || [];
+  if (!list.length) return "";
+  var nq = normalize(q);
+  if (!nq) return '<p class="search-hint">Escribe las primeras letras de tu nombre para buscarlo en la lista de invitados.</p>';
+  var matches = list.filter(function(name){ return normalize(name).indexOf(nq) !== -1; }).slice(0, 8);
+  if (!matches.length) {
+    return '<p class="search-hint">No te encontramos en la lista de invitados. Revisa cómo lo escribiste o continúa con el nombre que pusiste arriba.</p>';
+  }
+  return '<div class="name-results">' + matches.map(function(name){
+    return '<button type="button" class="name-result" data-name="' + escapeHtml(name) + '" onclick="__G.selectParticipant(this.dataset.name)">' + escapeHtml(name) + '</button>';
+  }).join("") + '</div>';
+}
+function refreshNameResults(){
+  var wrap = document.getElementById("nameResultsWrap");
+  if (!wrap) return;
+  var input = document.getElementById("nameSearch");
+  wrap.innerHTML = nameResultsHtml(input ? input.value : "");
+}
+
+function nameEntryHtml(){
+  var hasList = !!(ctx.config && ctx.config.participants && ctx.config.participants.length);
+  return '' +
+  '<div class="player-shell">' + brandRow() +
+    '<div class="player-card">' +
+      '<img class="hero-sm" src="' + ASSET_HERO + '" alt="Pato Odor Block" />' +
+      '<h2 class="greet">' + (hasList ? "¡Sin pena, busca tu nombre!" : "¡Sin pena, escribe tu nombre!") + '</h2>' +
+      '<p class="muted">' + (hasList ? "Busca tu nombre en la lista de invitados. Si no aparece, puedes escribirlo tal cual y continuar." : "Así apareces en el ranking de la pantalla principal.") + '</p>' +
+      '<form onsubmit="__G.submitName(); return false;" style="margin-top:1.2rem; display:flex; flex-direction:column; gap:.8rem;">' +
+        '<div class="name-search-wrap">' +
+          '<input id="nameSearch" autocomplete="name" placeholder="Tu nombre completo" required maxlength="60" oninput="__G.onNameSearch()" />' +
+        '</div>' +
+        (hasList ? '<div id="nameResultsWrap">' + nameResultsHtml("") + '</div>' : "") +
+        '<button class="btn btn-primary btn-lg" type="submit">' + (hasList ? "Continuar con este nombre" : "Entrar al reto") + '</button>' +
+      '</form>' +
+      offlineNote() +
+    '</div>' +
+  '</div>';
+}
+
+function playerLobbyHtml(){
+  var cfg = ctx.config;
+  return '' +
+  '<div class="player-shell">' + brandRow() +
+    '<div class="player-card">' +
+      '<img class="duck-sm" src="' + ASSET_DUCK + '" alt="" />' +
+      '<h2 class="greet">Hola, ' + escapeHtml(ctx.myPlayer.name) + (ctx.myPlayer.listed ? "" : '<span class="not-listed">no en la lista</span>') + '</h2>' +
+      '<p class="muted" style="margin-top:.5rem;"><span class="pulse-dot"></span>Esperando a que el anfitrión inicie el reto…</p>' +
+      '<div class="info-pill" style="margin-top:1rem;">Tendrás ' + cfg.durationSeconds + ' segundos</div>' +
+      '<p class="muted" style="margin-top:1rem; font-weight:700; color:var(--ink);">' + escapeHtml(cfg.question) + '</p>' +
+      (cfg.prize ? '<div class="prize-banner">Premio: ' + escapeHtml(cfg.prize) + '</div>' : "") +
+      '<p class="footer-note">No cierres esta pestaña. La pantalla principal avisará cuando empiece.</p>' +
+      '<button class="btn btn-ghost" onclick="__G.forgetPlayer()">No soy yo, cambiar nombre</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function ringHtml(size, fontSize){
+  return '<div class="ring-wrap" style="--ring-size:' + size + 'px;">' +
+    '<div class="ring" id="ringEl" style="--pct:100; --ring-font:' + fontSize + ';"><span class="ring-time tabular" id="ringTimeEl">0:00</span></div>' +
+  '</div>';
+}
+
+function playerLiveHtml(){
+  var cfg = ctx.config;
+  return '' +
+  '<div class="player-shell">' + brandRow() +
+    '<div class="player-card">' +
+      ringHtml(150, "1.85rem") +
+      '<p class="q" style="font-weight:700; margin-top:1rem;">' + escapeHtml(cfg.question) + '</p>' +
+      '<form class="entry-row" onsubmit="__G.addPlaceFromInput(); return false;">' +
+        '<input id="placeInput" placeholder="Escribe un lugar y da Enter" autocomplete="off" maxlength="40" />' +
+        '<button class="btn btn-primary" type="submit" aria-label="Agregar lugar">+</button>' +
+      '</form>' +
+      '<div id="liveDynamic">' + liveDynamicHtml() + '</div>' +
+    '</div>' +
+  '</div>';
+}
+function liveDynamicHtml(){
+  var count = ctx.validSet ? ctx.validSet.size : 0;
+  var chips = ctx.currentPlaces.map(function(p, i){
+    if (p.canonical) {
+      return '<span class="chip valid"><span class="mark">✓</span>' + escapeHtml(p.canonical) + (p.dup ? " · repetido" : "") +
+        ' <span onclick="__G.removePlace(' + i + ')" style="cursor:pointer; opacity:.6;">✕</span></span>';
+    }
+    return '<span class="chip invalid">' + escapeHtml(p.text) + " · no reconocido" +
+      ' <span onclick="__G.removePlace(' + i + ')" style="cursor:pointer; opacity:.6;">✕</span></span>';
+  }).join("");
+  return '' +
+    '<div style="margin-top:1.1rem;"><div class="valid-count tabular">' + count + '</div><div class="valid-count-label">lugares válidos</div></div>' +
+    '<div class="chip-list">' + (chips || '<span class="muted">Aún no escribes ningún lugar…</span>') + '</div>';
+}
+function refreshLiveDynamic(){
+  var el = document.getElementById("liveDynamic");
+  if (el) el.innerHTML = liveDynamicHtml();
+}
+
+function playerSubmittedHtml(){
+  var count = ctx.myAnswerDoc ? ctx.myAnswerDoc.count : 0;
+  return '' +
+  '<div class="player-shell">' + brandRow() +
+    '<div class="player-card">' +
+      '<img class="duck-sm" src="' + ASSET_DUCK + '" alt="" />' +
+      '<h2 class="greet">¡Enviado!</h2>' +
+      '<p class="muted">Nombraste <b style="color:var(--ink);">' + count + '</b> lugares válidos.</p>' +
+      '<p class="muted" style="margin-top:.6rem;"><span class="pulse-dot"></span>Espera a que termine el tiempo de los demás…</p>' +
+      '<p class="footer-note">El ranking va a salir en la pantalla principal.</p>' +
+    '</div>' +
+  '</div>';
+}
+
+function rankOf(slug){
+  var idx = ctx.answersForRound.findIndex(function(a){ return a.slug === slug; });
+  return idx >= 0 ? idx + 1 : null;
+}
+function playerResultsTopHtml(){
+  var mine = ctx.answersForRound.find(function(a){ return a.slug === ctx.myPlayer.slug; });
+  var rank = rankOf(ctx.myPlayer.slug);
+  var body;
+  if (mine) {
+    body = '<h2 class="greet">' + (rank ? "Puesto #" + rank : "") + '</h2>' +
+      '<p class="muted">Nombraste <b style="color:var(--ink);">' + mine.count + '</b> lugares válidos.</p>';
+  } else {
+    body = '<h2 class="greet">Ronda terminada</h2><p class="muted">No alcanzaste a enviar respuestas esta vez. ¡A la próxima ronda!</p>';
+  }
+  return '' +
+  '<div class="player-shell">' + brandRow() +
+    '<div class="player-card">' +
+      '<img class="duck-sm" src="' + ASSET_DUCK + '" alt="" />' +
+      body +
+      '<p class="footer-note">Mira el ranking completo en la pantalla principal.</p>' +
+    '</div>' +
+  '</div>';
+}
+function playerResultsPlacesHtml(){
+  return '' +
+  '<div class="player-shell">' + brandRow() +
+    '<div class="player-card">' +
+      '<img class="duck-sm" src="' + ASSET_DUCK + '" alt="" />' +
+      '<h2 class="greet">Los lugares más comunes</h2>' +
+      wordCloudHtml(computeTopPlaces(10), "", 1, 2.1) +
+    '</div>' +
+  '</div>';
+}
+
+var _hostLiveMount = null; /* dedupe key: avoids rebuilding (and glitching) the live timer ring on unrelated snapshot updates */
+function refreshHostLiveDynamic(){
+  var el = document.getElementById("submitTally");
+  if (el) el.textContent = ctx.answersForRound.length + " de " + ctx.players.length + " ya respondieron";
+}
+/* ============================= RENDER: HOST ============================= */
+function renderHost(app){
+  ensurePlayersSub();
+  ensureAnswersSub();
+  var status = ctx.game.status;
+  var liveKey = ctx.game.roundId + ":" + (ctx.settingsOpen ? 1 : 0);
+  if (status === "live" && _hostLiveMount === liveKey) {
+    refreshHostLiveDynamic(); /* keep the ring/timer DOM untouched; just update the live submit tally */
+    return;
+  }
+
+  var main;
+  if (status === "live") { main = hostLiveHtml(); _hostLiveMount = liveKey; }
+  else if (status === "results_top") { main = hostResultsTopHtml(); _hostLiveMount = null; }
+  else if (status === "results_places") { main = hostResultsPlacesHtml(); _hostLiveMount = null; }
+  else { main = hostLobbyHtml(); _hostLiveMount = null; }
+
+  app.innerHTML = '' +
+  '<div class="host-outer"><div class="host-canvas">' +
+    '<img class="host-decor swirl" src="' + ASSET_SWIRL + '" alt="" />' +
+    '<img class="host-decor duck" src="' + ASSET_DUCK + '" alt="" />' +
+    '<img class="host-decor bottle" src="' + ASSET_BOTTLE + '" alt="" />' +
+    '<div class="host-content">' +
+      '<div class="host-topbar">' +
+        '<div class="wordmark"><span class="wm-badge">PATO</span><span class="wm-sub">Odor Block · Reto Sin Pena</span></div>' +
+        '<button class="host-gear" onclick="__G.openSettings()" title="Configurar" aria-label="Configurar">⚙</button>' +
+      '</div>' +
+      '<div class="host-main">' + main + '</div>' +
+      hostDockHtml(status) +
+      offlineNote() +
+    '</div>' +
+  '</div></div>' +
+  (ctx.settingsOpen ? settingsDrawerHtml() : "");
+
+  if (status === "lobby") drawQr();
+  if (ctx.settingsOpen) wireSettingsDrawer();
+}
+
+function hostDockHtml(status){
+  if (status === "live") {
+    return '<div class="host-dock"><button class="btn btn-secondary" onclick="__G.goResultsPlaces()">Ver lugares más comunes</button></div>';
+  }
+  if (status === "results_places") {
+    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.goResultsTop()">Ver ranking</button>' +
+      '<button class="btn btn-ghost" onclick="__G.backToLobby()">Reiniciar</button></div>';
+  }
+  if (status === "results_top") {
+    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.newRound()">Nueva ronda</button></div>';
+  }
+  return "";
+}
+
+function hostLobbyHtml(){
+  var cfg = ctx.config;
+  var joined = ctx.players.length;
+  return '' +
+  '<div class="lobby-copy">' +
+    '<div class="eyebrow">N°2 sin pena · en vivo</div>' +
+    '<h2>Reto Sin Pena</h2>' +
+    '<p class="question">' + escapeHtml(cfg.question) + '</p>' +
+    (cfg.prize ? '<div class="prize-banner" style="display:inline-block; margin-top:1rem;">Premio: ' + escapeHtml(cfg.prize) + '</div>' : "") +
+    '<div class="join-box">' +
+      '<div class="qr" id="qrbox"></div>' +
+      '<div class="jt">Escanea para unirte<br/><b>' + cfg.durationSeconds + ' segundos</b> para responder</div>' +
+    '</div>' +
+    '<div class="count-badge"><span class="n tabular">' + joined + '</span><span class="l">' + (joined === 1 ? "persona conectada" : "personas conectadas") + '</span></div>' +
+  '</div>' +
+  '<button class="btn btn-primary btn-lg" onclick="__G.startRound()">Iniciar reto</button>';
+}
+
+function drawQr(attemptsLeft){
+  var box = document.getElementById("qrbox");
+  if (!box) return;
+  if (!window.QRCode) {
+    /* the QR library loads from a CDN with `defer` so it may still be arriving; retry briefly instead of giving up */
+    if (attemptsLeft === undefined) attemptsLeft = 20;
+    if (attemptsLeft > 0) setTimeout(function(){ drawQr(attemptsLeft - 1); }, 250);
+    return;
+  }
+  box.innerHTML = "";
+  try {
+    var url = location.href.split("#")[0] + "#jugar";
+    new QRCode(box, { text: url, width: 76, height: 76, colorDark: "#241a30", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {}
+}
+
+function hostLiveHtml(){
+  var cfg = ctx.config;
+  var submitted = ctx.answersForRound.length;
+  var joined = ctx.players.length;
+  return '' +
+  '<div class="timer-stage">' +
+    ringHtml(230, "3.2rem") +
+    '<p class="q">' + escapeHtml(cfg.question) + '</p>' +
+    '<p class="submit-tally tabular" id="submitTally">' + submitted + ' de ' + joined + ' ya respondieron</p>' +
+  '</div>';
+}
+
+function podiumSlot(a, rank){
+  if (!a) return "";
+  return '<div class="podium-slot rank-' + rank + '">' +
+    '<div class="badge">' + rank + '</div>' +
+    '<div class="nm">' + escapeHtml(a.name) + '</div>' +
+    '<div class="ct tabular">' + a.count + (a.count === 1 ? " lugar" : " lugares") + '</div>' +
+    '<div class="bar"></div>' +
+  '</div>';
+}
+function hostResultsTopHtml(){
+  var top = ctx.answersForRound.slice(0, 5);
+  if (!top.length) {
+    return '<div class="lobby-copy" style="text-align:center;"><h2>Aún nadie respondió</h2><p class="question">Nadie alcanzó a enviar respuestas en esta ronda.</p></div>';
+  }
+  var podium = [top[1], top[0], top[2]];
+  var rest = top.slice(3);
+  return '' +
+  '<div class="podium-wrap">' +
+    '<h2 style="text-align:center;">Ranking del reto</h2>' +
+    '<div class="podium">' +
+      podiumSlot(podium[0], 2) +
+      podiumSlot(podium[1], 1) +
+      podiumSlot(podium[2], 3) +
+    '</div>' +
+    (rest.length ? '<div class="rest-list">' + rest.map(function(a, i){
+      return '<div class="rest-item"><span class="badge-sm">' + (i + 4) + '</span>' + escapeHtml(a.name) + ' · ' + a.count + '</div>';
+    }).join("") + '</div>' : "") +
+  '</div>';
+}
+
+function computeTopPlaces(limit){
+  var freq = {};
+  ctx.answersForRound.forEach(function(a){
+    (a.valid || []).forEach(function(p){ freq[p] = (freq[p] || 0) + 1; });
+  });
+  var entries = Object.keys(freq).map(function(k){ return { place: k, count: freq[k] }; });
+  entries.sort(function(a, b){ return b.count - a.count; });
+  return entries.slice(0, limit || 10);
+}
+var WORDCLOUD_PALETTE = ["var(--accent-pink)", "var(--accent-purple)", "var(--accent-green)", "var(--accent-pink-soft)", "var(--accent-purple-soft)", "var(--accent-green-soft)"];
+function interleaveBySize(sorted){
+  var out = [];
+  var left = true;
+  for (var i = 0; i < sorted.length; i++) {
+    if (left) out.unshift(sorted[i]); else out.push(sorted[i]);
+    left = !left;
+  }
+  return out;
+}
+function wordCloudHtml(entries, title, minFont, maxFont){
+  minFont = minFont || 1.15;
+  maxFont = maxFont || 3.7;
+  if (!entries.length) {
+    return '<div class="lobby-copy" style="text-align:center;"><h2>Sin datos todavía</h2><p class="question">No hay lugares registrados en esta ronda.</p></div>';
+  }
+  var max = entries[0].count;
+  var min = entries[entries.length - 1].count;
+  var arranged = interleaveBySize(entries);
+  return '' +
+  '<div style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1.2rem;">' +
+    (title ? '<h2 style="text-align:center;">' + escapeHtml(title) + '</h2>' : "") +
+    '<div class="wordcloud">' + arranged.map(function(e, i){
+      var t = max > min ? (e.count - min) / (max - min) : 1;
+      var size = minFont + Math.sqrt(t) * (maxFont - minFont);
+      var color = WORDCLOUD_PALETTE[i % WORDCLOUD_PALETTE.length];
+      return '<span class="wc-word" style="font-size:' + size.toFixed(2) + 'rem; color:' + color + ';">' + escapeHtml(e.place) + '</span>';
+    }).join("") + '</div>' +
+  '</div>';
+}
+function hostResultsPlacesHtml(){
+  return wordCloudHtml(computeTopPlaces(10), "Los lugares más comunes");
+}
+
+/* ============================= SETTINGS DRAWER ============================= */
+function placesToText(places){
+  return places.map(function(p){
+    return p.synonyms && p.synonyms.length ? p.canonical + " = " + p.synonyms.join(", ") : p.canonical;
+  }).join("\n");
+}
+function settingsDrawerHtml(){
+  var cfg = ctx.config;
+  return '' +
+  '<div class="overlay" id="settingsOverlay">' +
+    '<div class="drawer">' +
+      '<h3>Configurar el reto</h3>' +
+      '<form id="settingsForm" onsubmit="__G.saveSettings(); return false;">' +
+        '<div class="grp field"><label>Pregunta</label><textarea id="cfgQuestion" rows="3">' + escapeHtml(cfg.question) + '</textarea></div>' +
+        '<div class="grp field"><label>Duración (segundos)</label><input id="cfgDuration" type="number" min="10" max="180" value="' + cfg.durationSeconds + '" /></div>' +
+        '<div class="grp field"><label>Premio</label><input id="cfgPrize" type="text" value="' + escapeHtml(cfg.prize) + '" /></div>' +
+        '<div class="grp field"><label>Lista de invitados</label>' +
+          '<textarea id="cfgParticipants" rows="6" placeholder="Un nombre por línea">' + escapeHtml((cfg.participants || []).join("\n")) + '</textarea>' +
+          '<div class="hint">Si la dejas vacía, cualquier nombre puede entrar. Si la llenas, los nombres que no coincidan igual pueden jugar, pero se marcan como “no en la lista”.</div>' +
+        '</div>' +
+        '<div class="grp field"><label>Lugares válidos</label>' +
+          '<textarea id="cfgPlaces" rows="10">' + escapeHtml(placesToText(cfg.places)) + '</textarea>' +
+          '<div class="hint">Un lugar por línea. Usa “=” para agregar sinónimos: <i>El gimnasio = gimnasio, gym</i></div>' +
+        '</div>' +
+        '<div class="drawer-actions">' +
+          '<button type="button" class="btn btn-ghost" onclick="__G.closeSettings()">Cancelar</button>' +
+          '<button type="submit" class="btn btn-primary">Guardar</button>' +
+        '</div>' +
+      '</form>' +
+    '</div>' +
+  '</div>';
+}
+function wireSettingsDrawer(){
+  var overlay = document.getElementById("settingsOverlay");
+  if (overlay) {
+    overlay.addEventListener("click", function(ev){ if (ev.target === overlay) G.closeSettings(); });
+  }
+}
+
+/* ============================= TICK LOOP ============================= */
+function tick(){
+  if (!ctx.game || ctx.game.status !== "live") return;
+  var total = (ctx.game.durationSeconds || DEFAULT_DURATION) * 1000;
+  var remaining = ctx.game.startedAt + total - Date.now();
+  var pct = Math.max(0, Math.min(100, (remaining / total) * 100));
+  var ringEl = document.getElementById("ringEl");
+  var timeEl = document.getElementById("ringTimeEl");
+  if (ringEl && timeEl) {
+    ringEl.style.setProperty("--pct", pct.toFixed(2));
+    ringEl.style.setProperty("--ring-color", remaining <= 5000 ? "var(--accent-red)" : "var(--accent-pink)");
+    timeEl.textContent = formatMMSS(Math.max(0, remaining));
+  }
+  if (ctx.role === "player" && ctx.myPlayer && remaining <= 0) {
+    var already = ctx.myAnswerDoc && ctx.myAnswerDoc.roundId === ctx.game.roundId;
+    if (!already && !ctx._submitting) submitAnswer();
+  }
+}
+setInterval(tick, 200);
+
+/* ============================= ROOT RENDER ============================= */
+function render(){
+  var app = document.getElementById("app");
+  if (!app) return;
+  if (!ctx.config || !ctx.game) { app.innerHTML = loadingHtml(); return; }
+  if (!ctx.role) { app.innerHTML = roleScreenHtml(); return; }
+  if (ctx.role === "player") { renderPlayer(app); return; }
+  if (ctx.role === "host") { renderHost(app); return; }
+  app.innerHTML = roleScreenHtml();
+}
+
+/* ============================= BOOT ============================= */
+function initialRole(){
+  var hash = (location.hash || "").replace("#", "");
+  if (hash === "jugar") return "player";
+  if (hash === "pantalla") return "host";
+  try {
+    var stored = localStorage.getItem("retoSinPena.role");
+    if (stored === "player" || stored === "host") return stored;
+  } catch (e) {}
+  return null;
+}
+function restorePlayer(){
+  try {
+    var slug = localStorage.getItem("retoSinPena.playerSlug");
+    var name = localStorage.getItem("retoSinPena.playerName");
+    var listed = localStorage.getItem("retoSinPena.playerListed") === "1";
+    if (slug && name) ctx.myPlayer = { slug: slug, name: name, listed: listed };
+  } catch (e) {}
+}
+
+var SUPABASE_URL = "https://hxvjsjjomqohjqoavyyq.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_tB4dexpeHSqnx-sGcyfmHw_dMSjejOO";
+
+async function waitForSupabase(){
+  try {
+    var ok = await Promise.race([
+      window.__supabaseReady,
+      new Promise(function(resolve){ setTimeout(function(){ resolve(false); }, 6000); })
+    ]);
+    return (ok && window.supabase) ? window.supabase : null;
+  } catch (e) { return null; }
+}
+
+async function boot(){
+  ctx.role = initialRole();
+  restorePlayer();
+  render();
+  var sbLib = await waitForSupabase();
+  var client = null;
+  if (sbLib) {
+    try { client = sbLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+    catch (e) { client = null; }
+  }
+  ctx.usingLocal = !client;
+  store = client ? wrapSupabase(client) : makeLocalStore();
+
+  store.doc("config/settings").onSnapshot(function(snap){
+    ctx.config = mergeConfig(snap.exists ? snap.data : null);
+    if (!snap.exists) store.doc("config/settings").set(defaultConfig());
+    render();
+  });
+  store.doc("state/current").onSnapshot(function(snap){
+    var prevRound = ctx.game ? ctx.game.roundId : undefined;
+    ctx.game = mergeGame(snap.exists ? snap.data : null);
+    if (!snap.exists) store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: DEFAULT_DURATION });
+    render();
+  });
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
