@@ -248,14 +248,14 @@
   /* ---------- host / pantalla ---------- */
   .host-outer{
     flex:1; display:flex; align-items:center; justify-content:center; padding:1.4rem;
-    cursor:none;
+    cursor:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDM2IDQwIj4KICA8cmVjdCB4PSIxNCIgeT0iMiIgd2lkdGg9IjgiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMyNDFhMzAiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iMTkiIHI9IjUiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzI0MWEzMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGNpcmNsZSBjeD0iMjciIGN5PSIyMyIgcj0iNSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMjQxYTMwIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8cmVjdCB4PSI5IiB5PSIxOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE2IiByeD0iOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMjQxYTMwIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iOCIgY3k9IjI3IiByeD0iNiIgcnk9IjQuNSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMjQxYTMwIiBzdHJva2Utd2lkdGg9IjIiIHRyYW5zZm9ybT0icm90YXRlKC0yMCA4IDI3KSIvPgogIDxyZWN0IHg9IjkiIHk9IjMxIiB3aWR0aD0iMjAiIGhlaWdodD0iNiIgcng9IjMiIGZpbGw9IiNlMDQwN2UiIHN0cm9rZT0iIzI0MWEzMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPg==") 16 2, auto;
     background:
       linear-gradient(180deg, var(--tile-scrim-1), var(--tile-scrim-2)),
       var(--tile-img) center/cover no-repeat,
       var(--bg);
   }
   .host-canvas{
-    width:100%; max-width:1400px; min-height:54rem;
+    width:100%; max-width:1400px; min-height:62rem;
     background:var(--surface); border-radius:28px; border:1px solid var(--line);
     box-shadow:var(--shadow); position:relative; overflow:hidden;
     display:flex; flex-direction:column; padding:2.2rem 3rem;
@@ -263,7 +263,7 @@
   .host-topbar{ display:flex; align-items:center; justify-content:space-between; }
   .wordmark{ display:flex; align-items:center; gap:.6rem; }
   .wordmark .wm-badge{ font-family:'Baloo 2'; font-weight:800; color:var(--accent-red); font-size:1.35rem; letter-spacing:.02em; }
-  .wordmark .wm-logo{ height:4rem; width:auto; display:block; }
+  .wordmark .wm-logo{ height:8rem; width:auto; display:block; }
   .host-gear{ background:var(--surface-2); border:none; border-radius:12px; width:2.6rem; height:2.6rem; cursor:pointer; font-size:1.1rem; color:var(--ink-muted); }
   .host-gear:hover{ color:var(--ink); }
   .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:3rem; min-height:0; }
@@ -281,7 +281,7 @@
   .lobby-copy h2{ font-size:2.5rem; line-height:1.08; margin-top:.4rem; }
   .lobby-copy .question{ font-size:1.25rem; margin-top:1rem; color:var(--ink); font-weight:600; line-height:1.4; }
   .join-box{ background:var(--surface-2); border-radius:20px; padding:1.1rem 1.3rem; margin-top:1.4rem; display:flex; align-items:center; gap:1rem; }
-  .join-box .qr{ width:88px; height:88px; border-radius:12px; background:#fff; padding:6px; flex:none; box-shadow:0 1px 0 var(--line); }
+  .join-box .qr{ width:168px; height:168px; border-radius:14px; background:#fff; padding:10px; flex:none; box-shadow:0 1px 0 var(--line); }
   .join-box .jt{ font-size:.86rem; color:var(--ink-muted); line-height:1.4; }
   .join-box .jt b{ color:var(--ink); font-family:'Baloo 2'; font-size:1.05rem; }
   .count-badge{ margin-top:1.2rem; display:inline-flex; align-items:center; gap:.5rem; }
@@ -329,7 +329,7 @@
   .host-dock{ display:flex; align-items:center; justify-content:center; gap:.8rem; padding-top:1rem; }
 
   /* ---------- settings drawer ---------- */
-  .overlay{ position:fixed; inset:0; background:rgba(20,12,26,.55); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:50; cursor:none; }
+  .overlay{ position:fixed; inset:0; background:rgba(20,12,26,.55); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:50; cursor:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDM2IDQwIj4KICA8cmVjdCB4PSIxNCIgeT0iMiIgd2lkdGg9IjgiIGhlaWdodD0iMTgiIHJ4PSI0IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiMyNDFhMzAiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjI0IiBjeT0iMTkiIHI9IjUiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iIzI0MWEzMCIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPGNpcmNsZSBjeD0iMjciIGN5PSIyMyIgcj0iNSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMjQxYTMwIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8cmVjdCB4PSI5IiB5PSIxOCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE2IiByeD0iOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMjQxYTMwIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8ZWxsaXBzZSBjeD0iOCIgY3k9IjI3IiByeD0iNiIgcnk9IjQuNSIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjMjQxYTMwIiBzdHJva2Utd2lkdGg9IjIiIHRyYW5zZm9ybT0icm90YXRlKC0yMCA4IDI3KSIvPgogIDxyZWN0IHg9IjkiIHk9IjMxIiB3aWR0aD0iMjAiIGhlaWdodD0iNiIgcng9IjMiIGZpbGw9IiNlMDQwN2UiIHN0cm9rZT0iIzI0MWEzMCIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPg==") 16 2, auto; }
   .drawer{ background:var(--surface); border-radius:24px; padding:1.8rem; max-width:34rem; width:100%; max-height:88vh; overflow-y:auto; box-shadow:var(--shadow); }
   .drawer h3{ font-size:1.3rem; }
   .drawer .grp{ margin-top:1.2rem; }
@@ -1677,7 +1677,7 @@ function drawQr(attemptsLeft){
   box.innerHTML = "";
   try {
     var url = location.href.split("#")[0] + "#jugar";
-    new QRCode(box, { text: url, width: 76, height: 76, colorDark: "#241a30", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(box, { text: url, width: 148, height: 148, colorDark: "#241a30", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
   } catch (e) {}
 }
 
