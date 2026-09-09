@@ -1442,8 +1442,13 @@ function playerResultsPlacesHtml(){
   '</div>';
 }
 
-var _hostLiveMount = null; /* dedupe key: avoids rebuilding (and glitching) the live timer ring on unrelated snapshot updates */
-var _hostLobbyMount = null; /* same idea for the lobby, so the "ver quién se ha unido" box doesn't snap shut every time someone joins */
+/* Dedupe state for the host screen: a single (status, key) pair shared by
+   both "live" and "lobby" so a stale key from one status can never be
+   mistaken for a match against the other -- that mismatch is what made the
+   live timer fail to appear after a reset (roundId goes back to 1, which
+   collided with a leftover "live" mount key from a previous round 1). */
+var _hostRenderedStatus = null;
+var _hostRenderedKey = null;
 function refreshHostLiveDynamic(){
   var el = document.getElementById("submitTally");
   if (el) el.textContent = ctx.answersForRound.length + " de " + ctx.players.length + " ya respondieron";
@@ -1462,22 +1467,21 @@ function renderHost(app){
   ensurePlayersSub();
   ensureAnswersSub();
   var status = ctx.game.status;
-  var liveKey = ctx.game.roundId + ":" + (ctx.settingsOpen ? 1 : 0);
-  var lobbyKey = "lobby:" + (ctx.settingsOpen ? 1 : 0);
-  if (status === "live" && _hostLiveMount === liveKey) {
-    refreshHostLiveDynamic(); /* keep the ring/timer DOM untouched; just update the live submit tally */
-    return;
-  }
-  if (status === "lobby" && _hostLobbyMount === lobbyKey) {
-    refreshHostLobbyDynamic(); /* keep the <details> open/closed state; just update the count and list */
+  var key = status + ":" + ctx.game.roundId + ":" + (ctx.settingsOpen ? 1 : 0);
+  if ((status === "live" || status === "lobby") && _hostRenderedStatus === status && _hostRenderedKey === key) {
+    /* keep the mounted DOM (ring/timer, or the <details> open/closed state)
+       untouched; just patch the few numbers that actually changed */
+    if (status === "live") refreshHostLiveDynamic(); else refreshHostLobbyDynamic();
     return;
   }
 
   var main;
-  if (status === "live") { main = hostLiveHtml(); _hostLiveMount = liveKey; _hostLobbyMount = null; }
-  else if (status === "results_top") { main = hostResultsTopHtml(); _hostLiveMount = null; _hostLobbyMount = null; }
-  else if (status === "results_places") { main = hostResultsPlacesHtml(); _hostLiveMount = null; _hostLobbyMount = null; }
-  else { main = hostLobbyHtml(); _hostLiveMount = null; _hostLobbyMount = lobbyKey; }
+  if (status === "live") { main = hostLiveHtml(); }
+  else if (status === "results_top") { main = hostResultsTopHtml(); }
+  else if (status === "results_places") { main = hostResultsPlacesHtml(); }
+  else { main = hostLobbyHtml(); }
+  _hostRenderedStatus = status;
+  _hostRenderedKey = key;
 
   app.innerHTML = '' +
   '<div class="host-outer"><div class="host-canvas">' +
