@@ -248,13 +248,14 @@
   /* ---------- host / pantalla ---------- */
   .host-outer{
     flex:1; display:flex; align-items:center; justify-content:center; padding:1.4rem;
+    cursor:none;
     background:
       linear-gradient(180deg, var(--tile-scrim-1), var(--tile-scrim-2)),
       var(--tile-img) center/cover no-repeat,
       var(--bg);
   }
   .host-canvas{
-    width:100%; max-width:1400px; min-height:42rem;
+    width:100%; max-width:1400px; min-height:46rem;
     background:var(--surface); border-radius:28px; border:1px solid var(--line);
     box-shadow:var(--shadow); position:relative; overflow:hidden;
     display:flex; flex-direction:column; padding:2.2rem 3rem;
@@ -262,16 +263,15 @@
   .host-topbar{ display:flex; align-items:center; justify-content:space-between; }
   .wordmark{ display:flex; align-items:center; gap:.6rem; }
   .wordmark .wm-badge{ font-family:'Baloo 2'; font-weight:800; color:var(--accent-red); font-size:1.35rem; letter-spacing:.02em; }
-  .wordmark .wm-logo{ height:2.6rem; width:auto; display:block; }
-  .wordmark .wm-sub{ font-size:.78rem; color:var(--ink-muted); font-weight:700; }
+  .wordmark .wm-logo{ height:4rem; width:auto; display:block; }
   .host-gear{ background:var(--surface-2); border:none; border-radius:12px; width:2.6rem; height:2.6rem; cursor:pointer; font-size:1.1rem; color:var(--ink-muted); }
   .host-gear:hover{ color:var(--ink); }
   .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:3rem; min-height:0; }
   .host-decor{ position:absolute; opacity:.9; pointer-events:none; z-index:0; }
   .host-decor.swirl{ width:22rem; right:-4rem; top:-3rem; opacity:.55; }
   .host-decor.duck{ width:8.5rem; right:-.5rem; bottom:-1rem; opacity:.85; }
-  .host-decor.bottle{ width:4.2rem; left:.6rem; bottom:-1.5rem; opacity:.92; }
-  .host-decor.bottle-2{ width:4.2rem; left:4.4rem; bottom:-1.5rem; opacity:.92; }
+  .host-decor.bottle{ width:5.6rem; left:.4rem; bottom:-3.4rem; opacity:.92; }
+  .host-decor.bottle-2{ width:5.6rem; left:5.4rem; bottom:-3.4rem; opacity:.92; }
   .host-content{ position:relative; z-index:1; display:flex; flex-direction:column; height:100%; min-height:0; }
 
   .lobby-copy{ max-width:34rem; }
@@ -327,7 +327,7 @@
   .host-dock{ display:flex; align-items:center; justify-content:center; gap:.8rem; padding-top:1rem; }
 
   /* ---------- settings drawer ---------- */
-  .overlay{ position:fixed; inset:0; background:rgba(20,12,26,.55); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:50; }
+  .overlay{ position:fixed; inset:0; background:rgba(20,12,26,.55); display:flex; align-items:center; justify-content:center; padding:1.5rem; z-index:50; cursor:none; }
   .drawer{ background:var(--surface); border-radius:24px; padding:1.8rem; max-width:34rem; width:100%; max-height:88vh; overflow-y:auto; box-shadow:var(--shadow); }
   .drawer h3{ font-size:1.3rem; }
   .drawer .grp{ margin-top:1.2rem; }
@@ -1600,7 +1600,7 @@ function renderHost(app){
     '<img class="host-decor bottle" src="' + ASSET_BOTTLE + '" alt="" />' +
     '<div class="host-content">' +
       '<div class="host-topbar">' +
-        '<div class="wordmark"><img class="wm-logo" src="' + ASSET_LOGO + '" alt="Pato" /><span class="wm-sub">Odor Block · Reto Sin Pena</span></div>' +
+        '<div class="wordmark"><img class="wm-logo" src="' + ASSET_LOGO + '" alt="Pato" /></div>' +
         '<button class="host-gear" onclick="__G.openSettings()" title="Configurar" aria-label="Configurar">⚙</button>' +
       '</div>' +
       '<div class="host-main">' + main + '</div>' +
