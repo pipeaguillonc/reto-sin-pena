@@ -92,27 +92,35 @@ alter table public.pato_answers enable row level security;
 drop policy if exists "public select" on public.pato_config;
 drop policy if exists "public insert" on public.pato_config;
 drop policy if exists "public update" on public.pato_config;
+drop policy if exists "public delete" on public.pato_config;
 create policy "public select" on public.pato_config for select using (true);
 create policy "public insert" on public.pato_config for insert with check (true);
 create policy "public update" on public.pato_config for update using (true) with check (true);
+create policy "public delete" on public.pato_config for delete using (true);
 
 drop policy if exists "public select" on public.pato_state;
 drop policy if exists "public insert" on public.pato_state;
 drop policy if exists "public update" on public.pato_state;
+drop policy if exists "public delete" on public.pato_state;
 create policy "public select" on public.pato_state for select using (true);
 create policy "public insert" on public.pato_state for insert with check (true);
 create policy "public update" on public.pato_state for update using (true) with check (true);
+create policy "public delete" on public.pato_state for delete using (true);
 
 drop policy if exists "public select" on public.pato_players;
 drop policy if exists "public insert" on public.pato_players;
 drop policy if exists "public update" on public.pato_players;
+drop policy if exists "public delete" on public.pato_players;
 create policy "public select" on public.pato_players for select using (true);
 create policy "public insert" on public.pato_players for insert with check (true);
 create policy "public update" on public.pato_players for update using (true) with check (true);
+create policy "public delete" on public.pato_players for delete using (true);
 
 drop policy if exists "public select" on public.pato_answers;
 drop policy if exists "public insert" on public.pato_answers;
 drop policy if exists "public update" on public.pato_answers;
+drop policy if exists "public delete" on public.pato_answers;
 create policy "public select" on public.pato_answers for select using (true);
 create policy "public insert" on public.pato_answers for insert with check (true);
 create policy "public update" on public.pato_answers for update using (true) with check (true);
+create policy "public delete" on public.pato_answers for delete using (true);

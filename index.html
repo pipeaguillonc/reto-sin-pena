@@ -278,6 +278,11 @@
   .count-badge{ margin-top:1.2rem; display:inline-flex; align-items:center; gap:.5rem; }
   .count-badge .n{ font-family:'Baloo 2'; font-weight:800; font-size:1.6rem; color:var(--accent-pink); }
   .count-badge .l{ color:var(--ink-muted); font-size:.85rem; font-weight:700; }
+  .players-details{ margin-top:.8rem; }
+  .players-details summary{ cursor:pointer; font-weight:700; color:var(--accent-purple); font-size:.85rem; }
+  .players-list{ margin-top:.6rem; display:flex; flex-wrap:wrap; gap:.4rem; max-height:180px; overflow-y:auto; }
+  .player-chip{ background:var(--surface-2); border-radius:999px; padding:.3rem .7rem; font-size:.78rem; color:var(--ink); }
+  .player-chip i{ color:var(--ink-muted); font-style:normal; font-size:.7rem; }
 
   .timer-stage{ display:flex; flex-direction:column; align-items:center; gap:1rem; }
   .timer-stage .q{ font-size:1.5rem; font-weight:700; text-align:center; max-width:36rem; }
@@ -613,13 +618,15 @@ function matchParticipant(input, list){
   }
   return { matched: false, display: toTitleCase(input), listed: false };
 }
-/* A place only needs to look like a real answer -- at least a couple of
-   letters -- not match a fixed catalog. This filters out blank input,
-   stray punctuation, or a lone keystroke, without trying (impossible in
-   plain JS) to verify that a given phrase is a real-world location. */
+/* A place only needs to look like a real answer, not match a fixed catalog.
+   There's no real dictionary check available in plain JS, so this is a
+   heuristic: reject blank input, stray punctuation/numbers, a lone
+   keystroke, and text with no vowels at all (keyboard mashing like "xzcvbn"
+   virtually never happens in real Spanish words/phrases). Anything else --
+   including places outside the curated list -- passes. */
 function isPlaceLike(input){
   var n = normalize(input).replace(/\s+/g, "");
-  return n.length >= 2 && /[a-z]/.test(n);
+  return n.length >= 2 && /[aeiou]/.test(n);
 }
 function matchPlace(input, places){
   var n = coreNormalize(input);
@@ -731,6 +738,11 @@ function makeLocalStore(){
         persist(); notifyPath(path);
         return Promise.resolve();
       },
+      delete: function(){
+        delete data[path];
+        persist(); notifyPath(path);
+        return Promise.resolve();
+      },
       onSnapshot: function(next){
         if (!docListeners[path]) docListeners[path] = [];
         docListeners[path].push(next);
@@ -750,6 +762,14 @@ function makeLocalStore(){
       doc: function(id){ return makeDocRef(basepath + "/" + (id || uid())); },
       add: function(body){ var ref = makeDocRef(basepath + "/" + uid()); return ref.set(body).then(function(){ return ref; }); },
       get: function(){ return Promise.resolve(applyQuery(computeDocs(basepath), spec)); },
+      clear: function(){
+        var ids = computeDocs(basepath).map(function(d){ return d.id; });
+        ids.forEach(function(id){ delete data[basepath + "/" + id]; });
+        persist();
+        ids.forEach(function(id){ notifyPath(basepath + "/" + id); });
+        notifyColAt(basepath);
+        return Promise.resolve();
+      },
       onSnapshot: function(next){
         if (!colListeners[basepath]) colListeners[basepath] = [];
         var entry = { cb: next, spec: spec };
@@ -843,6 +863,9 @@ function wrapSupabase(sb){
           return sb.from(table).upsert(row).then(function(res){ if (res.error) throw res.error; });
         });
       },
+      delete: function(){
+        return sb.from(table).delete().eq("id", id).then(function(res){ if (res.error) throw res.error; });
+      },
       onSnapshot: function(next, err){
         var stopped = false;
         ref.get().then(function(snap){ if (!stopped) next(snap); }).catch(function(e){ if (err) err(e); });
@@ -901,6 +924,11 @@ function wrapSupabase(sb){
           var docs = (res.data || []).map(function(row){ return { id: row.id, body: row.data }; });
           return applyQuery(docs, spec);
         });
+      },
+      clear: function(){
+        /* Delete every row in the table. Postgrest requires a filter even for
+           a full wipe, so match everything with a filter every real id satisfies. */
+        return sb.from(table).delete().neq("id", "").then(function(res){ if (res.error) throw res.error; });
       },
       onSnapshot: function(next){
         ensureLive();
@@ -998,6 +1026,20 @@ function ensureMyAnswerSub(){
     render();
   });
 }
+/* Watches this player's own row so that if the host does a full reset
+   (clearing everyone), this phone notices its entry is gone and goes back
+   to the name-entry screen instead of staying "stuck" showing stale state. */
+function ensureMyPlayerSub(){
+  if (!ctx.myPlayer) return;
+  if (ctx._myPlayerSubbedSlug === ctx.myPlayer.slug) return;
+  if (ctx._myPlayerUnsub) { ctx._myPlayerUnsub(); ctx._myPlayerUnsub = null; }
+  ctx._myPlayerSubbedSlug = ctx.myPlayer.slug;
+  ctx._myPlayerSeenExists = false;
+  ctx._myPlayerUnsub = store.doc("players/" + ctx.myPlayer.slug).onSnapshot(function(snap){
+    if (snap.exists) { ctx._myPlayerSeenExists = true; return; }
+    if (ctx._myPlayerSeenExists) G.forgetPlayer();
+  });
+}
 
 /* ============================= GAME ACTIONS ============================= */
 var G = {};
@@ -1047,6 +1089,8 @@ G.forgetPlayer = function(){
   ctx.myAnswerDoc = null;
   ctx._myAnswerRound = undefined;
   if (ctx._myAnswerUnsub) { ctx._myAnswerUnsub(); ctx._myAnswerUnsub = null; }
+  ctx._myPlayerSubbedSlug = undefined;
+  if (ctx._myPlayerUnsub) { ctx._myPlayerUnsub(); ctx._myPlayerUnsub = null; }
   try {
     localStorage.removeItem("retoSinPena.playerSlug");
     localStorage.removeItem("retoSinPena.playerName");
@@ -1154,6 +1198,22 @@ G.goResultsTop = function(){ store.doc("state/current").update({ status: "result
 G.goResultsPlaces = function(){ store.doc("state/current").update({ status: "results_places" }); };
 G.newRound = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
 G.backToLobby = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
+/* Full reset: wipes every participant and every round's answers, and puts
+   the game back at round 0. Each connected phone notices its own player
+   row disappeared (see ensureMyPlayerSub) and is sent back to the name
+   entry screen automatically -- so "reiniciar" actually starts over. */
+G.hardReset = function(){
+  if (!ctx.config || !store) return;
+  try {
+    if (!window.confirm("¿Reiniciar todo? Se borran todos los participantes y respuestas, y a cada quien le va a pedir ingresar su nombre de nuevo.")) return;
+  } catch (e) {}
+  Promise.all([
+    store.collection("players").clear(),
+    store.collection("answers").clear()
+  ]).then(function(){
+    return store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: ctx.config.durationSeconds });
+  });
+};
 
 G.openSettings = function(){ ctx.settingsOpen = true; render(); };
 G.closeSettings = function(){ ctx.settingsOpen = false; render(); };
@@ -1217,6 +1277,7 @@ var _playerLiveMount = null; /* dedupe key: avoids rebuilding (and glitching) th
 function renderPlayer(app){
   if (!ctx.myPlayer) { _playerLiveMount = null; app.innerHTML = nameEntryHtml(); focusNameInput(); return; }
   ensureMyAnswerSub();
+  ensureMyPlayerSub();
   var status = ctx.game.status;
   if (status === "lobby") { _playerLiveMount = null; app.innerHTML = playerLobbyHtml(); return; }
   if (status === "live") {
@@ -1382,9 +1443,19 @@ function playerResultsPlacesHtml(){
 }
 
 var _hostLiveMount = null; /* dedupe key: avoids rebuilding (and glitching) the live timer ring on unrelated snapshot updates */
+var _hostLobbyMount = null; /* same idea for the lobby, so the "ver quién se ha unido" box doesn't snap shut every time someone joins */
 function refreshHostLiveDynamic(){
   var el = document.getElementById("submitTally");
   if (el) el.textContent = ctx.answersForRound.length + " de " + ctx.players.length + " ya respondieron";
+}
+function refreshHostLobbyDynamic(){
+  var joined = ctx.players.length;
+  var n = document.getElementById("joinedCount");
+  if (n) n.textContent = joined;
+  var l = document.getElementById("joinedLabel");
+  if (l) l.textContent = joined === 1 ? "persona conectada" : "personas conectadas";
+  var list = document.getElementById("playersListBox");
+  if (list) list.innerHTML = playersListHtml();
 }
 /* ============================= RENDER: HOST ============================= */
 function renderHost(app){
@@ -1392,16 +1463,21 @@ function renderHost(app){
   ensureAnswersSub();
   var status = ctx.game.status;
   var liveKey = ctx.game.roundId + ":" + (ctx.settingsOpen ? 1 : 0);
+  var lobbyKey = "lobby:" + (ctx.settingsOpen ? 1 : 0);
   if (status === "live" && _hostLiveMount === liveKey) {
     refreshHostLiveDynamic(); /* keep the ring/timer DOM untouched; just update the live submit tally */
     return;
   }
+  if (status === "lobby" && _hostLobbyMount === lobbyKey) {
+    refreshHostLobbyDynamic(); /* keep the <details> open/closed state; just update the count and list */
+    return;
+  }
 
   var main;
-  if (status === "live") { main = hostLiveHtml(); _hostLiveMount = liveKey; }
-  else if (status === "results_top") { main = hostResultsTopHtml(); _hostLiveMount = null; }
-  else if (status === "results_places") { main = hostResultsPlacesHtml(); _hostLiveMount = null; }
-  else { main = hostLobbyHtml(); _hostLiveMount = null; }
+  if (status === "live") { main = hostLiveHtml(); _hostLiveMount = liveKey; _hostLobbyMount = null; }
+  else if (status === "results_top") { main = hostResultsTopHtml(); _hostLiveMount = null; _hostLobbyMount = null; }
+  else if (status === "results_places") { main = hostResultsPlacesHtml(); _hostLiveMount = null; _hostLobbyMount = null; }
+  else { main = hostLobbyHtml(); _hostLiveMount = null; _hostLobbyMount = lobbyKey; }
 
   app.innerHTML = '' +
   '<div class="host-outer"><div class="host-canvas">' +
@@ -1430,14 +1506,22 @@ function hostDockHtml(status){
   }
   if (status === "results_places") {
     return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.goResultsTop()">Ver ranking</button>' +
-      '<button class="btn btn-ghost" onclick="__G.backToLobby()">Reiniciar</button></div>';
+      '<button class="btn btn-ghost" onclick="__G.hardReset()">Reiniciar todo</button></div>';
   }
   if (status === "results_top") {
-    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.newRound()">Nueva ronda</button></div>';
+    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.newRound()">Nueva ronda</button>' +
+      '<button class="btn btn-ghost" onclick="__G.hardReset()">Reiniciar todo</button></div>';
   }
   return "";
 }
 
+function playersListHtml(){
+  if (!ctx.players.length) return '<span class="muted">Nadie se ha unido todavía.</span>';
+  var sorted = ctx.players.slice().sort(function(a, b){ return a.name.localeCompare(b.name, "es"); });
+  return sorted.map(function(p){
+    return '<span class="player-chip">' + escapeHtml(p.name) + (p.listed ? "" : ' <i>(no en la lista)</i>') + '</span>';
+  }).join("");
+}
 function hostLobbyHtml(){
   var cfg = ctx.config;
   var joined = ctx.players.length;
@@ -1451,7 +1535,11 @@ function hostLobbyHtml(){
       '<div class="qr" id="qrbox"></div>' +
       '<div class="jt">Escanea para unirte<br/><b>' + cfg.durationSeconds + ' segundos</b> para responder</div>' +
     '</div>' +
-    '<div class="count-badge"><span class="n tabular">' + joined + '</span><span class="l">' + (joined === 1 ? "persona conectada" : "personas conectadas") + '</span></div>' +
+    '<div class="count-badge"><span class="n tabular" id="joinedCount">' + joined + '</span><span class="l" id="joinedLabel">' + (joined === 1 ? "persona conectada" : "personas conectadas") + '</span></div>' +
+    '<details class="players-details" id="playersDetails"><summary>Ver quién se ha unido</summary>' +
+      '<div class="players-list" id="playersListBox">' + playersListHtml() + '</div>' +
+      '<button type="button" class="btn btn-ghost" style="margin-top:.8rem; font-size:.8rem;" onclick="__G.hardReset()">Reiniciar participantes</button>' +
+    '</details>' +
   '</div>' +
   '<button class="btn btn-primary btn-lg" onclick="__G.startRound()">Iniciar reto</button>';
 }
