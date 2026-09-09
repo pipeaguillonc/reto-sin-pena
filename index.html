@@ -1009,6 +1009,32 @@ function ensurePlayersSub(){
     render();
   });
 }
+
+/* Realtime events can be missed (a backgrounded tab, a brief reconnect, or an
+   answer that lands a beat after the host already moved to the results
+   screen) and the passive subscriptions above never notice a miss on their
+   own. These do a one-off direct fetch to correct the local copy whenever it
+   actually matters, instead of trusting only the accumulated realtime cache. */
+var _answersForcedKey = null;
+function refetchAnswersForRound(roundId){
+  if (!store) return;
+  store.collection("answers").where("roundId", "==", roundId).orderBy("count", "desc").limit(300).get()
+    .then(function(docs){
+      if (!ctx.game || ctx.game.roundId !== roundId) return; /* stale response, round moved on */
+      ctx.answersForRound = docs.map(function(d){ return d.data; }).filter(Boolean);
+      render();
+    })
+    .catch(function(e){});
+}
+function refetchPlayers(){
+  if (!store) return;
+  store.collection("players").limit(500).get()
+    .then(function(docs){
+      ctx.players = docs.map(function(d){ return d.data; }).filter(Boolean);
+      render();
+    })
+    .catch(function(e){});
+}
 function ensureMyAnswerSub(){
   if (!ctx.myPlayer || !ctx.game) return;
   if (ctx._myAnswerRound === ctx.game.roundId) return;
@@ -1187,16 +1213,39 @@ function maybeFinalizeMyAnswer(newGame){
   submitAnswer();
 }
 
+/* These host actions used to only write to Supabase and wait for the
+   realtime echo to come back before the screen visually changed -- on a
+   slow/laggy connection that round trip is perceptible, so the first click
+   looked like it did nothing and the host would click again. Updating
+   ctx.game locally first (then rendering immediately, then writing) makes
+   the transition instant regardless of network latency; the eventual
+   realtime echo just confirms the same values and is a no-op. */
 G.startRound = function(){
   if (!ctx.game || !ctx.config) return;
   var newRoundId = (ctx.game.roundId || 0) + 1;
-  store.doc("state/current").set({
-    status: "live", roundId: newRoundId, startedAt: Date.now(), durationSeconds: ctx.config.durationSeconds
-  });
+  var next = { status: "live", roundId: newRoundId, startedAt: Date.now(), durationSeconds: ctx.config.durationSeconds };
+  ctx.game = mergeGame(next);
+  render();
+  store.doc("state/current").set(next);
 };
-G.goResultsTop = function(){ store.doc("state/current").update({ status: "results_top" }); };
-G.goResultsPlaces = function(){ store.doc("state/current").update({ status: "results_places" }); };
-G.newRound = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
+G.goResultsTop = function(){
+  if (!ctx.game) return;
+  ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "results_top" }));
+  render();
+  store.doc("state/current").update({ status: "results_top" });
+};
+G.goResultsPlaces = function(){
+  if (!ctx.game) return;
+  ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "results_places" }));
+  render();
+  store.doc("state/current").update({ status: "results_places" });
+};
+G.newRound = function(){
+  if (!ctx.game) return;
+  ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "lobby", startedAt: 0 }));
+  render();
+  store.doc("state/current").update({ status: "lobby", startedAt: 0 });
+};
 G.backToLobby = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
 /* Full reset: wipes every participant and every round's answers, and puts
    the game back at round 0. Each connected phone notices its own player
@@ -1290,8 +1339,13 @@ function renderPlayer(app){
     return;
   }
   _playerLiveMount = null;
-  if (status === "results_top") { ensureAnswersSub(); app.innerHTML = playerResultsTopHtml(); return; }
-  if (status === "results_places") { ensureAnswersSub(); app.innerHTML = playerResultsPlacesHtml(); return; }
+  if (status === "results_top" || status === "results_places") {
+    ensureAnswersSub();
+    var rrk = status + ":" + ctx.game.roundId;
+    if (_answersForcedKey !== rrk) { _answersForcedKey = rrk; refetchAnswersForRound(ctx.game.roundId); }
+    app.innerHTML = status === "results_top" ? playerResultsTopHtml() : playerResultsPlacesHtml();
+    return;
+  }
   app.innerHTML = playerLobbyHtml();
 }
 function focusNameInput(){ setTimeout(function(){ var el = document.getElementById("nameSearch"); if (el) el.focus(); }, 30); }
@@ -1473,6 +1527,11 @@ function renderHost(app){
        untouched; just patch the few numbers that actually changed */
     if (status === "live") refreshHostLiveDynamic(); else refreshHostLobbyDynamic();
     return;
+  }
+
+  if (status === "results_top" || status === "results_places") {
+    var rk = status + ":" + ctx.game.roundId;
+    if (_answersForcedKey !== rk) { _answersForcedKey = rk; refetchAnswersForRound(ctx.game.roundId); }
   }
 
   var main;
@@ -1714,9 +1773,17 @@ setInterval(tick, 200);
    force an immediate check the moment the tab becomes visible again --
    this catches a round whose local countdown already hit zero while we
    were away. */
+function resyncOnForeground(){
+  tick();
+  if (!ctx.game) return;
+  if (ctx.role === "host") refetchPlayers();
+  if (ctx._answersSubRound !== undefined && ctx._answersSubRound === ctx.game.roundId) {
+    refetchAnswersForRound(ctx.game.roundId);
+  }
+}
 try {
-  document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible") tick(); });
-  window.addEventListener("pageshow", function(){ tick(); });
+  document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible") resyncOnForeground(); });
+  window.addEventListener("pageshow", function(){ resyncOnForeground(); });
 } catch (e) {}
 
 /* ============================= ROOT RENDER ============================= */
