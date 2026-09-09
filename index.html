@@ -114,6 +114,11 @@
     display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
     transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
     text-align:center;
+    /* Some mobile browsers add a double-tap-to-zoom gesture delay on
+       elements that don't opt out, which can make a single tap feel like it
+       needs a second one to register -- this makes every button respond to
+       the very first tap. */
+    touch-action:manipulation;
   }
   .btn:active{ transform:scale(.97); }
   .btn:focus-visible{ outline:3px solid var(--accent-purple); outline-offset:2px; }
