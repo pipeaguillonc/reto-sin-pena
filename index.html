@@ -262,6 +262,7 @@
   .host-topbar{ display:flex; align-items:center; justify-content:space-between; }
   .wordmark{ display:flex; align-items:center; gap:.6rem; }
   .wordmark .wm-badge{ font-family:'Baloo 2'; font-weight:800; color:var(--accent-red); font-size:1.35rem; letter-spacing:.02em; }
+  .wordmark .wm-logo{ height:2.6rem; width:auto; display:block; }
   .wordmark .wm-sub{ font-size:.78rem; color:var(--ink-muted); font-weight:700; }
   .host-gear{ background:var(--surface-2); border:none; border-radius:12px; width:2.6rem; height:2.6rem; cursor:pointer; font-size:1.1rem; color:var(--ink-muted); }
   .host-gear:hover{ color:var(--ink); }
@@ -363,6 +364,7 @@ var ASSET_DUCK = "assets/duck.webp";
 var ASSET_SWIRL = "assets/swirl.webp";
 var ASSET_BOTTLE = "assets/bottle.webp";
 var ASSET_HERO = "assets/hero.webp";
+var ASSET_LOGO = "assets/logo.webp";
 var ASSET_TILE = "assets/tile.webp";
 
 try { document.documentElement.style.setProperty("--tile-img", 'url("' + ASSET_TILE + '")'); } catch (e) {}
@@ -377,8 +379,9 @@ var DEFAULT_PLACES = [
   { canonical: "La oficina o el trabajo", synonyms: ["oficina", "trabajo", "chamba", "la empresa"] },
   { canonical: "El centro comercial", synonyms: ["centro comercial", "cc", "mall"] },
   { canonical: "La casa de un amigo", synonyms: ["casa de un amigo", "casa de amigos", "casa de mi amigo", "casa de una amiga"] },
-  { canonical: "La casa de los suegros", synonyms: ["casa de los papas", "casa de los papás", "casa de los suegros", "casa del novio", "casa de la novia", "casa de la suegra"] },
-  { canonical: "La casa de los abuelos", synonyms: ["casa de los abuelos", "casa de la abuela", "casa del abuelo"] },
+  { canonical: "La casa de los suegros", synonyms: ["casa de los papas", "casa de los papás", "casa de los suegros", "casa del novio", "casa de la novia", "casa de la suegra", "novio", "novia"] },
+  { canonical: "La casa de los abuelos", synonyms: ["casa de los abuelos", "casa de la abuela", "casa del abuelo", "abuela", "abuelo"] },
+  { canonical: "La casa de un tío o tía", synonyms: ["tia", "tio", "tias", "tios", "casa de la tia", "casa del tio"] },
   { canonical: "El avión", synonyms: ["avion", "vuelo"] },
   { canonical: "El bus o Transmilenio", synonyms: ["bus", "buseta", "transmilenio", "transporte publico", "metro"] },
   { canonical: "El carro en un trancón", synonyms: ["carro", "trancon", "taxi", "uber", "carretera"] },
@@ -1594,7 +1597,7 @@ function renderHost(app){
     '<img class="host-decor bottle" src="' + ASSET_BOTTLE + '" alt="" />' +
     '<div class="host-content">' +
       '<div class="host-topbar">' +
-        '<div class="wordmark"><span class="wm-badge">PATO</span><span class="wm-sub">Odor Block · Reto Sin Pena</span></div>' +
+        '<div class="wordmark"><img class="wm-logo" src="' + ASSET_LOGO + '" alt="Pato" /><span class="wm-sub">Odor Block · Reto Sin Pena</span></div>' +
         '<button class="host-gear" onclick="__G.openSettings()" title="Configurar" aria-label="Configurar">⚙</button>' +
       '</div>' +
       '<div class="host-main">' + main + '</div>' +
