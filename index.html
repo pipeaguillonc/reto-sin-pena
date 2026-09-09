@@ -331,7 +331,6 @@
   .drawer .grp{ margin-top:1.2rem; }
   .drawer-actions{ display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.5rem; }
   .hint{ font-size:.78rem; color:var(--ink-muted); margin-top:.3rem; line-height:1.4; }
-  .not-listed{ display:inline-block; margin-left:.4rem; font-size:.68rem; font-weight:800; color:var(--accent-purple); background:var(--accent-purple-wash); padding:.1rem .45rem; border-radius:999px; vertical-align:middle; }
 
   @media (max-width: 900px){
     .host-outer{ padding:.6rem; }
@@ -978,6 +977,7 @@ var ctx = {
   currentPlaces: [],
   validSet: null,
   settingsOpen: false,
+  rankingExpanded: false,
   _answersSubRound: undefined,
   _answersUnsub: null,
   _playersSubbed: false,
@@ -1014,6 +1014,7 @@ function ensureAnswersSub(){
   if (ctx._answersUnsub) { ctx._answersUnsub(); ctx._answersUnsub = null; }
   ctx._answersSubRound = ctx.game.roundId;
   ctx.answersForRound = [];
+  ctx.rankingExpanded = false;
   ctx._answersUnsub = store.collection("answers")
     .where("roundId", "==", ctx.game.roundId)
     .orderBy("count", "desc")
@@ -1274,6 +1275,10 @@ G.goResultsTop = function(){
   render();
   store.doc("state/current").update({ status: "results_top" });
 };
+G.toggleRanking = function(){
+  ctx.rankingExpanded = !ctx.rankingExpanded;
+  render();
+};
 G.goResultsPlaces = function(){
   if (!ctx.game) return;
   ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "results_places" }));
@@ -1437,7 +1442,7 @@ function playerLobbyHtml(){
   '<div class="player-shell">' + brandRow() +
     '<div class="player-card">' +
       '<img class="duck-sm" src="' + ASSET_DUCK + '" alt="" />' +
-      '<h2 class="greet">Hola, ' + escapeHtml(ctx.myPlayer.name) + (ctx.myPlayer.listed ? "" : '<span class="not-listed">no en la lista</span>') + '</h2>' +
+      '<h2 class="greet">Hola, ' + escapeHtml(ctx.myPlayer.name) + '</h2>' +
       '<p class="muted" style="margin-top:.5rem;"><span class="pulse-dot"></span>Esperando a que el anfitrión inicie el reto…</p>' +
       '<div class="info-pill" style="margin-top:1rem;">Tendrás ' + cfg.durationSeconds + ' segundos</div>' +
       '<p class="muted" style="margin-top:1rem; font-weight:700; color:var(--ink);">' + escapeHtml(cfg.question) + '</p>' +
@@ -1622,7 +1627,7 @@ function playersListHtml(){
   if (!ctx.players.length) return '<span class="muted">Nadie se ha unido todavía.</span>';
   var sorted = ctx.players.slice().sort(function(a, b){ return a.name.localeCompare(b.name, "es"); });
   return sorted.map(function(p){
-    return '<span class="player-chip">' + escapeHtml(p.name) + (p.listed ? "" : ' <i>(no en la lista)</i>') + '</span>';
+    return '<span class="player-chip">' + escapeHtml(p.name) + '</span>';
   }).join("");
 }
 function hostLobbyHtml(){
@@ -1700,7 +1705,12 @@ function hostResultsTopHtml(){
       podiumSlot(podium[1], 1) +
       podiumSlot(podium[2], 3) +
     '</div>' +
-    (rest.length ? '<div class="rest-list">' + rest.map(function(a, i){
+    (rest.length ? (
+      '<button type="button" class="btn btn-ghost" style="display:block; margin:.8rem auto 0;" onclick="__G.toggleRanking()">' +
+        (ctx.rankingExpanded ? "Ocultar el resto ▲" : "Ver el resto del ranking (" + rest.length + ") ▼") +
+      '</button>'
+    ) : "") +
+    (rest.length && ctx.rankingExpanded ? '<div class="rest-list">' + rest.map(function(a, i){
       var pos = i + 4;
       var cutoff = pos === 6 ? '<div class="muted" style="text-align:center; margin:.6rem 0; font-size:.85rem; border-top:1px dashed currentColor; opacity:.5; padding-top:.6rem;">— hasta aquí el premio —</div>' : "";
       return cutoff + '<div class="rest-item"><span class="badge-sm">' + pos + '</span>' + escapeHtml(a.name) + ' · ' + a.count + '</div>';
@@ -1769,7 +1779,7 @@ function settingsDrawerHtml(){
         '<div class="grp field"><label>Premio</label><input id="cfgPrize" type="text" value="' + escapeHtml(cfg.prize) + '" /></div>' +
         '<div class="grp field"><label>Lista de invitados</label>' +
           '<textarea id="cfgParticipants" rows="6" placeholder="Un nombre por línea">' + escapeHtml((cfg.participants || []).join("\n")) + '</textarea>' +
-          '<div class="hint">Si la dejas vacía, cualquier nombre puede entrar. Si la llenas, los nombres que no coincidan igual pueden jugar, pero se marcan como “no en la lista”.</div>' +
+          '<div class="hint">Si la dejas vacía, cualquier nombre puede entrar. Si la llenas, los nombres que no coincidan igual pueden jugar y participan exactamente igual que los de la lista.</div>' +
         '</div>' +
         '<div class="grp field"><label>Lugares válidos</label>' +
           '<textarea id="cfgPlaces" rows="10">' + escapeHtml(placesToText(cfg.places)) + '</textarea>' +
