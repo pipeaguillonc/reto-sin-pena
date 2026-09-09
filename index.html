@@ -254,8 +254,8 @@
       var(--bg);
   }
   .host-canvas{
-    width:100%; max-width:min(1400px, 177.7vh - 3rem);
-    aspect-ratio:16/9; background:var(--surface); border-radius:28px; border:1px solid var(--line);
+    width:100%; max-width:1400px; min-height:42rem;
+    background:var(--surface); border-radius:28px; border:1px solid var(--line);
     box-shadow:var(--shadow); position:relative; overflow:hidden;
     display:flex; flex-direction:column; padding:2.2rem 3rem;
   }
@@ -269,9 +269,9 @@
   .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:3rem; min-height:0; }
   .host-decor{ position:absolute; opacity:.9; pointer-events:none; z-index:0; }
   .host-decor.swirl{ width:22rem; right:-4rem; top:-3rem; opacity:.55; }
-  .host-decor.duck{ width:11rem; right:-.8rem; bottom:-.6rem; opacity:.85; }
-  .host-decor.bottle{ width:6.5rem; left:1.4rem; bottom:-.5rem; opacity:.92; }
-  .host-decor.bottle-2{ width:6.5rem; left:7.3rem; bottom:-.5rem; opacity:.92; }
+  .host-decor.duck{ width:8.5rem; right:-.5rem; bottom:-1rem; opacity:.85; }
+  .host-decor.bottle{ width:4.2rem; left:.6rem; bottom:-1.5rem; opacity:.92; }
+  .host-decor.bottle-2{ width:4.2rem; left:4.4rem; bottom:-1.5rem; opacity:.92; }
   .host-content{ position:relative; z-index:1; display:flex; flex-direction:column; height:100%; min-height:0; }
 
   .lobby-copy{ max-width:34rem; }
