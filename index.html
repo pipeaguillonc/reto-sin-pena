@@ -939,7 +939,24 @@ function wrapSupabase(sb){
         ensureLive();
         listeners.push(next);
         if (loaded) notify();
-        return function(){ listeners = listeners.filter(function(cb){ return cb !== next; }); };
+        return function(){
+          listeners = listeners.filter(function(cb){ return cb !== next; });
+          /* Without this, the underlying realtime channel (named "col:<table>")
+             was left open forever. Supabase's client returns that SAME
+             already-subscribed channel object the next time a collection on
+             this table subscribes (e.g. starting the next round), and calling
+             .on(...) on an already-subscribed channel throws
+             "cannot add postgres_changes callbacks ... after subscribe()" --
+             which aborted the render mid-way and is exactly why starting a
+             round (or any action that re-subscribes to a collection) silently
+             did nothing on the very first click. */
+          if (!listeners.length && channel) {
+            sb.removeChannel(channel);
+            channel = null;
+            loaded = false;
+            cache = {};
+          }
+        };
       }
     };
     return api;
