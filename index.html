@@ -269,8 +269,9 @@
   .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:3rem; min-height:0; }
   .host-decor{ position:absolute; opacity:.9; pointer-events:none; z-index:0; }
   .host-decor.swirl{ width:22rem; right:-4rem; top:-3rem; opacity:.55; }
-  .host-decor.duck{ width:11rem; left:-.8rem; bottom:-.6rem; opacity:.85; }
-  .host-decor.bottle{ width:6.5rem; right:1.4rem; bottom:-.5rem; opacity:.92; }
+  .host-decor.duck{ width:11rem; right:-.8rem; bottom:-.6rem; opacity:.85; }
+  .host-decor.bottle{ width:6.5rem; left:1.4rem; bottom:-.5rem; opacity:.92; }
+  .host-decor.bottle-2{ width:6.5rem; left:7.3rem; bottom:-.5rem; opacity:.92; }
   .host-content{ position:relative; z-index:1; display:flex; flex-direction:column; height:100%; min-height:0; }
 
   .lobby-copy{ max-width:34rem; }
@@ -363,6 +364,7 @@
 var ASSET_DUCK = "assets/duck.webp";
 var ASSET_SWIRL = "assets/swirl.webp";
 var ASSET_BOTTLE = "assets/bottle.webp";
+var ASSET_BOTTLE_EUCALIPTO = "assets/bottle-eucalipto.webp";
 var ASSET_HERO = "assets/hero.webp";
 var ASSET_LOGO = "assets/logo.webp";
 var ASSET_TILE = "assets/tile.webp";
@@ -1594,6 +1596,7 @@ function renderHost(app){
   '<div class="host-outer"><div class="host-canvas">' +
     '<img class="host-decor swirl" src="' + ASSET_SWIRL + '" alt="" />' +
     '<img class="host-decor duck" src="' + ASSET_DUCK + '" alt="" />' +
+    '<img class="host-decor bottle-2" src="' + ASSET_BOTTLE_EUCALIPTO + '" alt="" />' +
     '<img class="host-decor bottle" src="' + ASSET_BOTTLE + '" alt="" />' +
     '<div class="host-content">' +
       '<div class="host-topbar">' +
