@@ -973,8 +973,10 @@ function ensureMyAnswerSub(){
   if (ctx._myAnswerUnsub) { ctx._myAnswerUnsub(); ctx._myAnswerUnsub = null; }
   ctx._myAnswerRound = ctx.game.roundId;
   ctx.myAnswerDoc = null;
-  ctx.currentPlaces = [];
+  var draft = loadDraft(ctx.game.roundId, ctx.myPlayer.slug);
+  ctx.currentPlaces = draft || [];
   ctx.validSet = new Set();
+  ctx.currentPlaces.forEach(function(p){ if (p.canonical && !p.dup) ctx.validSet.add(p.canonical); });
   ctx._submitting = false;
   var docId = ctx.game.roundId + "__" + ctx.myPlayer.slug;
   ctx._myAnswerUnsub = store.doc("answers/" + docId).onSnapshot(function(snap){
@@ -1058,6 +1060,7 @@ function addPlace(text){
   var dup = canonical && ctx.validSet.has(canonical);
   if (canonical && !dup) ctx.validSet.add(canonical);
   ctx.currentPlaces.push({ text: text, canonical: canonical, dup: !!dup });
+  saveDraft();
   refreshLiveDynamic();
 }
 G.removePlace = function(idx){
@@ -1072,20 +1075,58 @@ G.removePlace = function(idx){
       if (firstOther) firstOther.dup = false;
     }
   }
+  saveDraft();
   refreshLiveDynamic();
 };
+
+/* Draft persistence: keeps whatever the player has typed so far safe in
+   localStorage, so a backgrounded/reloaded tab can still recover it and
+   finish the submission instead of silently losing the answer. */
+function draftKey(roundId, slug){ return "retoSinPena.draft." + roundId + "." + slug; }
+function saveDraft(){
+  if (!ctx.myPlayer || !ctx.game) return;
+  try { localStorage.setItem(draftKey(ctx.game.roundId, ctx.myPlayer.slug), JSON.stringify(ctx.currentPlaces)); }
+  catch (e) {}
+}
+function loadDraft(roundId, slug){
+  try {
+    var raw = localStorage.getItem(draftKey(roundId, slug));
+    var arr = raw ? JSON.parse(raw) : null;
+    return Array.isArray(arr) ? arr : null;
+  } catch (e) { return null; }
+}
+function clearDraft(roundId, slug){
+  try { localStorage.removeItem(draftKey(roundId, slug)); } catch (e) {}
+}
 
 function submitAnswer(){
   if (!ctx.myPlayer || !ctx.game || ctx._submitting) return;
   ctx._submitting = true;
   var roundId = ctx.game.roundId;
+  var slug = ctx.myPlayer.slug;
   var valid = Array.from(ctx.validSet || []);
   var raw = ctx.currentPlaces.map(function(p){ return p.text; });
-  var docId = roundId + "__" + ctx.myPlayer.slug;
+  var docId = roundId + "__" + slug;
   store.doc("answers/" + docId).set({
-    roundId: roundId, slug: ctx.myPlayer.slug, name: ctx.myPlayer.name,
+    roundId: roundId, slug: slug, name: ctx.myPlayer.name,
     raw: raw, valid: valid, count: valid.length, submittedAt: Date.now()
   });
+  clearDraft(roundId, slug);
+}
+
+/* Belt-and-suspenders auto-submit: if the round moved on (host went to
+   results) while this tab still hadn't sent an answer for it -- typically
+   because the phone was locked/backgrounded and the local countdown timer
+   never got to run -- send whatever was typed so far right away instead of
+   losing it. */
+function maybeFinalizeMyAnswer(newGame){
+  if (ctx.role !== "player" || !ctx.myPlayer || !newGame) return;
+  if (newGame.status === "live" || newGame.status === "lobby") return;
+  if (!newGame.roundId) return;
+  if (ctx._myAnswerRound !== newGame.roundId) return;
+  var already = ctx.myAnswerDoc && ctx.myAnswerDoc.roundId === newGame.roundId;
+  if (already || ctx._submitting) return;
+  submitAnswer();
 }
 
 G.startRound = function(){
@@ -1439,12 +1480,13 @@ function podiumSlot(a, rank){
   '</div>';
 }
 function hostResultsTopHtml(){
-  var top = ctx.answersForRound.slice(0, 5);
+  var all = ctx.answersForRound;
+  var top = all.slice(0, 5);
   if (!top.length) {
     return '<div class="lobby-copy" style="text-align:center;"><h2>Aún nadie respondió</h2><p class="question">Nadie alcanzó a enviar respuestas en esta ronda.</p></div>';
   }
   var podium = [top[1], top[0], top[2]];
-  var rest = top.slice(3);
+  var rest = all.slice(3); /* everyone from 4th place on, not just up to 5th */
   return '' +
   '<div class="podium-wrap">' +
     '<h2 style="text-align:center;">Ranking del reto</h2>' +
@@ -1454,7 +1496,9 @@ function hostResultsTopHtml(){
       podiumSlot(podium[2], 3) +
     '</div>' +
     (rest.length ? '<div class="rest-list">' + rest.map(function(a, i){
-      return '<div class="rest-item"><span class="badge-sm">' + (i + 4) + '</span>' + escapeHtml(a.name) + ' · ' + a.count + '</div>';
+      var pos = i + 4;
+      var cutoff = pos === 6 ? '<div class="muted" style="text-align:center; margin:.6rem 0; font-size:.85rem; border-top:1px dashed currentColor; opacity:.5; padding-top:.6rem;">— hasta aquí el premio —</div>' : "";
+      return cutoff + '<div class="rest-item"><span class="badge-sm">' + pos + '</span>' + escapeHtml(a.name) + ' · ' + a.count + '</div>';
     }).join("") + '</div>' : "") +
   '</div>';
 }
@@ -1560,6 +1604,14 @@ function tick(){
   }
 }
 setInterval(tick, 200);
+/* Background/locked tabs get their timers throttled by the OS/browser, so
+   force an immediate check the moment the tab becomes visible again --
+   this catches a round whose local countdown already hit zero while we
+   were away. */
+try {
+  document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible") tick(); });
+  window.addEventListener("pageshow", function(){ tick(); });
+} catch (e) {}
 
 /* ============================= ROOT RENDER ============================= */
 function render(){
@@ -1624,9 +1676,9 @@ async function boot(){
     render();
   });
   store.doc("state/current").onSnapshot(function(snap){
-    var prevRound = ctx.game ? ctx.game.roundId : undefined;
     ctx.game = mergeGame(snap.exists ? snap.data : null);
     if (!snap.exists) store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: DEFAULT_DURATION });
+    maybeFinalizeMyAnswer(ctx.game);
     render();
   });
 }
