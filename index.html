@@ -1066,6 +1066,24 @@ function ensureMyPlayerSub(){
     if (ctx._myPlayerSeenExists) G.forgetPlayer();
   });
 }
+/* A host "Reiniciar todo" deletes every player row in one bulk operation, and
+   bulk deletes are exactly the kind of realtime event that can go missing on
+   a given phone (a dropped/reconnecting socket, a backgrounded tab) -- the
+   single-doc subscription above alone left some participants "anchored" on
+   their old screen after a reset instead of being sent back to name entry.
+   This does a direct, one-off check of the player's own row and is called
+   every time the game state changes (a reset always touches it) and every
+   time the tab comes back to the foreground, so a missed delete event gets
+   caught within moments instead of leaving the participant stuck. */
+function refetchMyPlayer(){
+  if (!ctx.myPlayer || !store) return;
+  var slug = ctx.myPlayer.slug;
+  store.doc("players/" + slug).get().then(function(snap){
+    if (!ctx.myPlayer || ctx.myPlayer.slug !== slug) return; /* already changed while this was in flight */
+    if (!snap.exists) G.forgetPlayer();
+    else ctx._myPlayerSeenExists = true;
+  }).catch(function(e){});
+}
 
 /* ============================= GAME ACTIONS ============================= */
 var G = {};
@@ -1777,6 +1795,7 @@ function resyncOnForeground(){
   tick();
   if (!ctx.game) return;
   if (ctx.role === "host") refetchPlayers();
+  if (ctx.role === "player" && ctx.myPlayer) refetchMyPlayer();
   if (ctx._answersSubRound !== undefined && ctx._answersSubRound === ctx.game.roundId) {
     refetchAnswersForRound(ctx.game.roundId);
   }
@@ -1852,6 +1871,7 @@ async function boot(){
     ctx.game = mergeGame(snap.exists ? snap.data : null);
     if (!snap.exists) store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: DEFAULT_DURATION });
     maybeFinalizeMyAnswer(ctx.game);
+    if (ctx.role === "player" && ctx.myPlayer) refetchMyPlayer();
     render();
   });
 }
