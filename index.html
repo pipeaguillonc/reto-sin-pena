@@ -266,6 +266,9 @@
   .wordmark .wm-logo{ height:4.4rem; width:auto; display:block; }
   .host-gear{ background:var(--surface-2); border:none; border-radius:12px; width:2.2rem; height:2.2rem; cursor:pointer; font-size:1rem; color:var(--ink-muted); }
   .host-gear:hover{ color:var(--ink); }
+  .host-actions{ display:flex; align-items:center; gap:.5rem; }
+  .host-fullscreen{ background:var(--surface-2); border:none; border-radius:12px; width:2.2rem; height:2.2rem; cursor:pointer; font-size:1rem; color:var(--ink-muted); }
+  .host-fullscreen:hover{ color:var(--ink); }
   .host-main{ flex:1; display:flex; align-items:center; justify-content:center; gap:1.8rem; min-height:0; }
   .host-decor{ position:absolute; opacity:.9; pointer-events:none; z-index:0; }
   .host-decor.swirl{ width:13rem; right:-2.5rem; top:-1.8rem; opacity:.55; }
@@ -1453,6 +1456,36 @@ G.hardReset = function(){
 
 G.openSettings = function(){ ctx.settingsOpen = true; render(); };
 G.closeSettings = function(){ ctx.settingsOpen = false; render(); };
+function isFullscreenActive(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function updateFullscreenBtn(){
+  var btn = document.getElementById("fsBtn");
+  if (!btn) return;
+  if (isFullscreenActive()) {
+    btn.textContent = "⛶";
+    btn.title = "Salir de pantalla completa";
+    btn.setAttribute("aria-label", "Salir de pantalla completa");
+    btn.classList.add("is-active");
+  } else {
+    btn.textContent = "⛶";
+    btn.title = "Pantalla completa";
+    btn.setAttribute("aria-label", "Pantalla completa");
+    btn.classList.remove("is-active");
+  }
+}
+G.toggleFullscreen = function(){
+  try {
+    if (isFullscreenActive()) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    } else {
+      var el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    }
+  } catch (e) {}
+};
 G.saveSettings = function(){
   var question = document.getElementById("cfgQuestion").value.trim() || DEFAULT_QUESTION;
   var duration = parseInt(document.getElementById("cfgDuration").value, 10);
@@ -1755,7 +1788,10 @@ function renderHost(app){
     '<div class="host-content">' +
       '<div class="host-topbar">' +
         '<div class="wordmark"><img class="wm-logo" src="' + ASSET_LOGO + '" alt="Pato" /></div>' +
-        '<button class="host-gear" onclick="__G.openSettings()" title="Configurar" aria-label="Configurar">⚙</button>' +
+        '<div class="host-actions">' +
+          '<button id="fsBtn" class="host-fullscreen" onclick="__G.toggleFullscreen()" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>' +
+          '<button class="host-gear" onclick="__G.openSettings()" title="Configurar" aria-label="Configurar">⚙</button>' +
+        '</div>' +
       '</div>' +
       '<div class="host-main">' + main + '</div>' +
       hostDockHtml(status) +
@@ -1766,6 +1802,7 @@ function renderHost(app){
 
   if (status === "lobby") drawQr();
   if (ctx.settingsOpen) wireSettingsDrawer();
+  updateFullscreenBtn();
 }
 
 function hostDockHtml(status){
@@ -2000,6 +2037,8 @@ function resyncOnForeground(){
 try {
   document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible") resyncOnForeground(); });
   window.addEventListener("pageshow", function(){ resyncOnForeground(); });
+  document.addEventListener("fullscreenchange", updateFullscreenBtn);
+  document.addEventListener("webkitfullscreenchange", updateFullscreenBtn);
 } catch (e) {}
 
 /* ============================= ROOT RENDER ============================= */
