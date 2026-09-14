@@ -909,15 +909,31 @@ function wrapSupabase(sb){
       },
       onSnapshot: function(next, err){
         var stopped = false;
+        var channel = null;
         ref.get().then(function(snap){ if (!stopped) next(snap); }).catch(function(e){ if (err) err(e); });
-        var channel = sb.channel("doc:" + table + ":" + id)
-          .on("postgres_changes", { event: "*", schema: "public", table: table, filter: "id=eq." + id }, function(payload){
-            if (stopped) return;
-            if (payload.eventType === "DELETE" || !payload.new) next({ id: id, exists: false, data: null });
-            else next({ id: id, exists: true, data: payload.new.data });
-          })
-          .subscribe();
-        return function(){ stopped = true; sb.removeChannel(channel); };
+        /* Supabase hands back the SAME channel object for a topic name that
+           hasn't finished being removed yet (removeChannel() is async), and
+           calling .on() on an already-subscribed channel throws. That would
+           otherwise abort whatever caller happened to be (re)subscribing --
+           see the long comment on ensureAnswersSub() below for the full
+           story -- so this retries on a short delay instead of throwing. */
+        function attach(attemptsLeft){
+          if (stopped) return;
+          try {
+            channel = sb.channel("doc:" + table + ":" + id)
+              .on("postgres_changes", { event: "*", schema: "public", table: table, filter: "id=eq." + id }, function(payload){
+                if (stopped) return;
+                if (payload.eventType === "DELETE" || !payload.new) next({ id: id, exists: false, data: null });
+                else next({ id: id, exists: true, data: payload.new.data });
+              })
+              .subscribe();
+          } catch (e) {
+            channel = null;
+            if (attemptsLeft > 0) setTimeout(function(){ attach(attemptsLeft - 1); }, 300);
+          }
+        }
+        attach(10);
+        return function(){ stopped = true; if (channel) sb.removeChannel(channel); };
       }
     };
     return ref;
@@ -941,17 +957,27 @@ function wrapSupabase(sb){
         loaded = true;
         notify();
       });
-      channel = sb.channel("col:" + table)
-        .on("postgres_changes", { event: "*", schema: "public", table: table }, function(payload){
-          if (payload.eventType === "DELETE") {
-            var oldId = payload.old && payload.old.id;
-            if (oldId != null) delete cache[oldId];
-          } else if (payload.new) {
-            cache[payload.new.id] = payload.new.data;
-          }
-          if (loaded) notify();
-        })
-        .subscribe();
+      /* Same defensive retry as the doc onSnapshot above: don't let a
+         not-yet-fully-removed channel with the same topic name throw and
+         abort whoever called ensureLive(). */
+      (function attach(attemptsLeft){
+        try {
+          channel = sb.channel("col:" + table)
+            .on("postgres_changes", { event: "*", schema: "public", table: table }, function(payload){
+              if (payload.eventType === "DELETE") {
+                var oldId = payload.old && payload.old.id;
+                if (oldId != null) delete cache[oldId];
+              } else if (payload.new) {
+                cache[payload.new.id] = payload.new.data;
+              }
+              if (loaded) notify();
+            })
+            .subscribe();
+        } catch (e) {
+          channel = null;
+          if (attemptsLeft > 0) setTimeout(function(){ attach(attemptsLeft - 1); }, 300);
+        }
+      })(10);
     }
     var api = {
       where: function(f, op, v){ spec.wheres.push([f, op, v]); return api; },
@@ -1015,11 +1041,12 @@ var ctx = {
   validSet: null,
   settingsOpen: false,
   rankingExpanded: false,
-  _answersSubRound: undefined,
-  _answersUnsub: null,
+  _allAnswers: [],
+  _answersSubbed: false,
   _playersSubbed: false,
   _submitting: false,
-  _qrDrawn: false
+  _qrDrawn: false,
+  _gameActionBusy: false
 };
 
 function mergeConfig(body){
@@ -1045,21 +1072,50 @@ function mergeGame(body){
   return { status: "lobby", roundId: 0, startedAt: 0, durationSeconds: DEFAULT_DURATION };
 }
 
+/* The answers collection is subscribed to exactly ONCE for the whole
+   session (same pattern as ensurePlayersSub below) instead of being
+   re-subscribed with a per-round `where(roundId==...)` filter on every
+   round change. That per-round approach used to tear down and recreate the
+   underlying Supabase realtime channel (same channel name each time) on
+   every round transition -- and Supabase's client hands back the SAME
+   not-yet-fully-removed channel object if a new subscription is requested
+   before the previous one's async removal finishes, which either throws
+   ("cannot add postgres_changes callbacks ... after subscribe()") or
+   silently leaves the new round's subscription attached to a channel that's
+   about to be torn down. Under real network latency (hardReset followed
+   quickly by starting a new round is exactly this sequence) that raced
+   often enough to (a) drop answers submitted right after the round change,
+   which is what made the host see fewer respondents than actually
+   submitted, and (b) abort whatever action was mid-render, so the state
+   write after it never went out and the screen visibly "un-did" itself.
+   Subscribing once and filtering by round entirely in JS (like players
+   already did) removes that whole race. */
+function recomputeAnswersForRound(){
+  if (!ctx.game) { ctx.answersForRound = []; return; }
+  ctx.answersForRound = (ctx._allAnswers || [])
+    .filter(function(a){ return a && a.roundId === ctx.game.roundId; })
+    .sort(function(a, b){ return (b.count || 0) - (a.count || 0); });
+}
 function ensureAnswersSub(){
-  if (!ctx.game) return;
-  if (ctx._answersSubRound === ctx.game.roundId) return;
-  if (ctx._answersUnsub) { ctx._answersUnsub(); ctx._answersUnsub = null; }
-  ctx._answersSubRound = ctx.game.roundId;
-  ctx.answersForRound = [];
-  ctx.rankingExpanded = false;
-  ctx._answersUnsub = store.collection("answers")
-    .where("roundId", "==", ctx.game.roundId)
-    .orderBy("count", "desc")
-    .limit(300)
-    .onSnapshot(function(docs){
-      ctx.answersForRound = docs.map(function(d){ return d.data; }).filter(Boolean);
-      render();
-    });
+  if (ctx._answersSubbed) return;
+  ctx._answersSubbed = true;
+  ctx._allAnswers = [];
+  store.collection("answers").limit(2000).onSnapshot(function(docs){
+    ctx._allAnswers = docs.map(function(d){ return d.data; }).filter(Boolean);
+    recomputeAnswersForRound();
+    render();
+  });
+}
+/* Sets ctx.game and keeps everything derived from the round id (the answers
+   list and the "show the rest of the ranking" toggle) in sync immediately,
+   instead of waiting for a fresh realtime event on the answers collection
+   -- so a round change always shows the right people right away even if an
+   answers update happens to arrive a beat later. */
+function setGame(next){
+  var prevRoundId = ctx.game ? ctx.game.roundId : undefined;
+  ctx.game = mergeGame(next);
+  if (ctx.game.roundId !== prevRoundId) ctx.rankingExpanded = false;
+  recomputeAnswersForRound();
 }
 function ensurePlayersSub(){
   if (ctx._playersSubbed) return;
@@ -1078,10 +1134,11 @@ function ensurePlayersSub(){
 var _answersForcedKey = null;
 function refetchAnswersForRound(roundId){
   if (!store) return;
-  store.collection("answers").where("roundId", "==", roundId).orderBy("count", "desc").limit(300).get()
+  store.collection("answers").limit(2000).get()
     .then(function(docs){
       if (!ctx.game || ctx.game.roundId !== roundId) return; /* stale response, round moved on */
-      ctx.answersForRound = docs.map(function(d){ return d.data; }).filter(Boolean);
+      ctx._allAnswers = docs.map(function(d){ return d.data; }).filter(Boolean);
+      recomputeAnswersForRound();
       render();
     })
     .catch(function(e){});
@@ -1297,20 +1354,53 @@ function maybeFinalizeMyAnswer(newGame){
    looked like it did nothing and the host would click again. Updating
    ctx.game locally first (then rendering immediately, then writing) makes
    the transition instant regardless of network latency; the eventual
-   realtime echo just confirms the same values and is a no-op. */
+   realtime echo just confirms the same values and is a no-op.
+
+   runGameAction() adds a second layer on top of that: while one of these
+   writes is still in flight, every dock/lobby button renders disabled (see
+   hostDockHtml / the "Iniciar reto" button) so a host tapping impatiently
+   on a slow connection, or a kiosk touchscreen double-firing a tap, can't
+   queue up a second state change on top of the first -- which is exactly
+   what used to make the game look like it was "restarting over and over":
+   a second click (e.g. hardReset immediately followed by another tap on
+   what was, a moment ago, "Iniciar reto") firing before the first write's
+   realtime echo had come back. A hard safety timeout clears the busy flag
+   even if a write never resolves, so a dropped connection can't leave the
+   host stuck with dead buttons. */
+function runGameAction(fn){
+  if (ctx._gameActionBusy) return false;
+  ctx._gameActionBusy = true;
+  var finished = false;
+  function finish(){
+    if (finished) return;
+    finished = true;
+    ctx._gameActionBusy = false;
+    render();
+  }
+  var safety = setTimeout(finish, 8000);
+  try {
+    var result = fn();
+    Promise.resolve(result).catch(function(e){}).then(function(){ clearTimeout(safety); finish(); });
+  } catch (e) { clearTimeout(safety); finish(); }
+  return true;
+}
 G.startRound = function(){
   if (!ctx.game || !ctx.config) return;
-  var newRoundId = (ctx.game.roundId || 0) + 1;
-  var next = { status: "live", roundId: newRoundId, startedAt: Date.now(), durationSeconds: ctx.config.durationSeconds };
-  ctx.game = mergeGame(next);
-  render();
-  store.doc("state/current").set(next);
+  runGameAction(function(){
+    var newRoundId = (ctx.game.roundId || 0) + 1;
+    var next = { status: "live", roundId: newRoundId, startedAt: Date.now(), durationSeconds: ctx.config.durationSeconds };
+    setGame(next);
+    render();
+    return store.doc("state/current").set(next);
+  });
 };
 G.goResultsTop = function(){
   if (!ctx.game) return;
-  ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "results_top" }));
-  render();
-  store.doc("state/current").update({ status: "results_top" });
+  runGameAction(function(){
+    setGame(Object.assign({}, ctx.game, { status: "results_top" }));
+    render();
+    return store.doc("state/current").update({ status: "results_top" });
+  });
 };
 G.toggleRanking = function(){
   ctx.rankingExpanded = !ctx.rankingExpanded;
@@ -1318,31 +1408,46 @@ G.toggleRanking = function(){
 };
 G.goResultsPlaces = function(){
   if (!ctx.game) return;
-  ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "results_places" }));
-  render();
-  store.doc("state/current").update({ status: "results_places" });
+  runGameAction(function(){
+    setGame(Object.assign({}, ctx.game, { status: "results_places" }));
+    render();
+    return store.doc("state/current").update({ status: "results_places" });
+  });
 };
 G.newRound = function(){
   if (!ctx.game) return;
-  ctx.game = mergeGame(Object.assign({}, ctx.game, { status: "lobby", startedAt: 0 }));
-  render();
-  store.doc("state/current").update({ status: "lobby", startedAt: 0 });
+  runGameAction(function(){
+    setGame(Object.assign({}, ctx.game, { status: "lobby", startedAt: 0 }));
+    render();
+    return store.doc("state/current").update({ status: "lobby", startedAt: 0 });
+  });
 };
 G.backToLobby = function(){ store.doc("state/current").update({ status: "lobby", startedAt: 0 }); };
 /* Full reset: wipes every participant and every round's answers, and puts
    the game back at round 0. Each connected phone notices its own player
    row disappeared (see ensureMyPlayerSub) and is sent back to the name
-   entry screen automatically -- so "reiniciar" actually starts over. */
+   entry screen automatically -- so "reiniciar" actually starts over.
+   Resetting ctx.game/ctx.players/ctx._allAnswers locally right away (same
+   "optimistic update" idea as the other actions above) means a round
+   started right after a reset always builds on roundId 0 instead of
+   whatever stale roundId was still sitting in memory while the reset's
+   writes were in flight. */
 G.hardReset = function(){
   if (!ctx.config || !store) return;
   try {
     if (!window.confirm("¿Reiniciar todo? Se borran todos los participantes y respuestas, y a cada quien le va a pedir ingresar su nombre de nuevo.")) return;
   } catch (e) {}
-  Promise.all([
-    store.collection("players").clear(),
-    store.collection("answers").clear()
-  ]).then(function(){
-    return store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: ctx.config.durationSeconds });
+  runGameAction(function(){
+    ctx.players = [];
+    ctx._allAnswers = [];
+    setGame({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: ctx.config.durationSeconds });
+    render();
+    return Promise.all([
+      store.collection("players").clear(),
+      store.collection("answers").clear()
+    ]).then(function(){
+      return store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: ctx.config.durationSeconds });
+    });
   });
 };
 
@@ -1588,6 +1693,8 @@ var _hostRenderedKey = null;
 function refreshHostLiveDynamic(){
   var el = document.getElementById("submitTally");
   if (el) el.textContent = ctx.answersForRound.length + " de " + ctx.players.length + " ya respondieron";
+  var goPlacesBtn = document.getElementById("goPlacesBtn");
+  if (goPlacesBtn) goPlacesBtn.disabled = !!ctx._gameActionBusy;
 }
 function refreshHostLobbyDynamic(){
   var joined = ctx.players.length;
@@ -1597,6 +1704,10 @@ function refreshHostLobbyDynamic(){
   if (l) l.textContent = joined === 1 ? "persona conectada" : "personas conectadas";
   var list = document.getElementById("playersListBox");
   if (list) list.innerHTML = playersListHtml();
+  var startBtn = document.getElementById("startRoundBtn");
+  if (startBtn) startBtn.disabled = !!ctx._gameActionBusy;
+  var resetBtn = document.getElementById("hardResetBtn");
+  if (resetBtn) resetBtn.disabled = !!ctx._gameActionBusy;
 }
 /* ============================= RENDER: HOST ============================= */
 function renderHost(app){
@@ -1613,7 +1724,15 @@ function renderHost(app){
 
   if (status === "results_top" || status === "results_places") {
     var rk = status + ":" + ctx.game.roundId;
-    if (_answersForcedKey !== rk) { _answersForcedKey = rk; refetchAnswersForRound(ctx.game.roundId); }
+    if (_answersForcedKey !== rk) {
+      _answersForcedKey = rk;
+      var rid = ctx.game.roundId;
+      refetchAnswersForRound(rid);
+      /* One extra check a moment later: catches an answer that was still in
+         flight (submitted right as the host moved on) and landed just after
+         the check above already ran. */
+      setTimeout(function(){ if (ctx.game && ctx.game.roundId === rid) refetchAnswersForRound(rid); }, 1500);
+    }
   }
 
   var main;
@@ -1650,16 +1769,20 @@ function renderHost(app){
 }
 
 function hostDockHtml(status){
+  /* Disabled while a previous dock action's write is still in flight -- see
+     runGameAction() -- so a second tap can't queue up on top of the first
+     and fire once the DOM re-renders. */
+  var busy = ctx._gameActionBusy ? " disabled" : "";
   if (status === "live") {
-    return '<div class="host-dock"><button class="btn btn-secondary" onclick="__G.goResultsPlaces()">Ver lugares más comunes</button></div>';
+    return '<div class="host-dock"><button id="goPlacesBtn" class="btn btn-secondary" onclick="__G.goResultsPlaces()"' + busy + '>Ver lugares más comunes</button></div>';
   }
   if (status === "results_places") {
-    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.goResultsTop()">Ver ranking</button>' +
-      '<button class="btn btn-ghost" onclick="__G.hardReset()">Reiniciar todo</button></div>';
+    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.goResultsTop()"' + busy + '>Ver ranking</button>' +
+      '<button class="btn btn-ghost" onclick="__G.hardReset()"' + busy + '>Reiniciar todo</button></div>';
   }
   if (status === "results_top") {
-    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.newRound()">Nueva ronda</button>' +
-      '<button class="btn btn-ghost" onclick="__G.hardReset()">Reiniciar todo</button></div>';
+    return '<div class="host-dock"><button class="btn btn-primary" onclick="__G.newRound()"' + busy + '>Nueva ronda</button>' +
+      '<button class="btn btn-ghost" onclick="__G.hardReset()"' + busy + '>Reiniciar todo</button></div>';
   }
   return "";
 }
@@ -1674,6 +1797,7 @@ function playersListHtml(){
 function hostLobbyHtml(){
   var cfg = ctx.config;
   var joined = ctx.players.length;
+  var busy = ctx._gameActionBusy ? " disabled" : "";
   return '' +
   '<div class="lobby-copy">' +
     '<div class="eyebrow">N°2 sin pena · en vivo</div>' +
@@ -1687,10 +1811,10 @@ function hostLobbyHtml(){
     '<div class="count-badge"><span class="n tabular" id="joinedCount">' + joined + '</span><span class="l" id="joinedLabel">' + (joined === 1 ? "persona conectada" : "personas conectadas") + '</span></div>' +
     '<details class="players-details" id="playersDetails"><summary>Ver quién se ha unido</summary>' +
       '<div class="players-list" id="playersListBox">' + playersListHtml() + '</div>' +
-      '<button type="button" class="btn btn-ghost" style="margin-top:.8rem; font-size:.8rem;" onclick="__G.hardReset()">Reiniciar participantes</button>' +
+      '<button type="button" id="hardResetBtn" class="btn btn-ghost" style="margin-top:.8rem; font-size:.8rem;" onclick="__G.hardReset()"' + busy + '>Reiniciar participantes</button>' +
     '</details>' +
   '</div>' +
-  '<button class="btn btn-primary btn-lg" onclick="__G.startRound()">Iniciar reto</button>';
+  '<button id="startRoundBtn" class="btn btn-primary btn-lg" onclick="__G.startRound()"' + busy + '>Iniciar reto</button>';
 }
 
 function drawQr(attemptsLeft){
@@ -1870,11 +1994,8 @@ setInterval(tick, 200);
 function resyncOnForeground(){
   tick();
   if (!ctx.game) return;
-  if (ctx.role === "host") refetchPlayers();
+  if (ctx.role === "host") { refetchPlayers(); refetchAnswersForRound(ctx.game.roundId); }
   if (ctx.role === "player" && ctx.myPlayer) refetchMyPlayer();
-  if (ctx._answersSubRound !== undefined && ctx._answersSubRound === ctx.game.roundId) {
-    refetchAnswersForRound(ctx.game.roundId);
-  }
 }
 try {
   document.addEventListener("visibilitychange", function(){ if (document.visibilityState === "visible") resyncOnForeground(); });
@@ -1944,7 +2065,7 @@ async function boot(){
     render();
   });
   store.doc("state/current").onSnapshot(function(snap){
-    ctx.game = mergeGame(snap.exists ? snap.data : null);
+    setGame(snap.exists ? snap.data : null);
     if (!snap.exists) store.doc("state/current").set({ status: "lobby", roundId: 0, startedAt: 0, durationSeconds: DEFAULT_DURATION });
     maybeFinalizeMyAnswer(ctx.game);
     if (ctx.role === "player" && ctx.myPlayer) refetchMyPlayer();
